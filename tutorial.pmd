@@ -1,0 +1,98 @@
+<<switches, echo=False, evaluate=True>>=
+text_echo = text_mode and not debug_mode
+text_evaluate = False
+code_echo = not text_mode
+code_evaluate = False
+debug_echo = debug_mode
+debug_evaluate = debug_mode
+@ 
+
+# Oh hey. 
+
+Welcome to the Discover STEM session on Programming for Robot Control.
+
+
+# Introduction to Python
+
+<<echo=<%=text_echo%>,evaluate = <%=text_evaluate%> >>=
+# This is some code that we will use to test your work. 
+import checker
+@
+
+<<echo=<%=debug_mode%>, evaluate = <%=debug_mode%> >>=
+import checker
+from importlib import reload
+reload(checker)
+@ 
+
+
+
+## Problem
+
+Write a function called `cubed` that takes a number, $x$, as input and returns its cube, $x^3$.
+
+<<echo=<%=text_echo%>, evaluate = <%=text_evaluate%> >>=
+# Write your code here. 
+
+
+# Don't modify this line. It is used to test your code.
+checker.check_cubed(cubed)
+@ 
+
+<<echo=<%=debug_mode%>, evaluate = True>>=
+cubed = lambda x : x**3
+checker.check_cubed(cubed)
+@ 
+
+
+<<echo=<%=code_echo%>,evaluate = <%=code_evaluate%> >>=
+# This is the main checker code 
+import numpy as np
+import numpy.random as rnd
+import scipy.linalg as la
+import scipy.signal as sp
+import systems as dsys
+
+def feedback(result):
+   if result:
+      print("oh yeah.")
+   else:
+      print("nope")
+
+def check_array_equality(X,X_test,tol=1e-3,ord=2):
+   err = la.norm(X-X_test,ord=ord)
+
+   passed = err < tol
+   feedback(passed)
+   return passed
+      
+
+def check_cubed(fun):
+   X = rnd.randn(10)
+   Y = X**3
+   Y_test = np.array([fun(x) for x in X])
+   check_array_equality(Y,Y_test)
+@ 
+
+## Why we need feedback
+<<echo=<%=debug_echo%>, evaluate=False>>=
+import simpleMovement
+
+simpleMovement.runOneD()
+@ 
+
+<<echo=<%=debug_echo%>,evaluate = <%=debug_evaluate%> >>=
+
+# This is just some testing code
+import systems as dsys
+import scipy.signal as sp
+reload(dsys)
+
+P = dsys.dcMotor().sys
+P_tf = sp.ss2tf(*P)
+
+omega_0 = 2.
+zeta = .7
+P = ([1.],[1./(omega_0**2), 2 * zeta / omega_0 , 1])
+
+@ 

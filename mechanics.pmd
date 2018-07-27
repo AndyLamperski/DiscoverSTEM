@@ -1,0 +1,115 @@
+# Hey
+
+Here we will develop some code for basic mechanics and test it. 
+
+<<echo=False, evaluate=True >>=
+code_mode = not text_mode
+@ 
+
+<<echo=<%=text_mode%>, evaluate = <%=text_mode%> >>=
+import autograd.numpy as np
+import numpy.random as rnd
+import autograd as ag
+import scipy.integrate as itg
+import matplotlib.pyplot as plt
+from importlib import reload
+import mechanics as mech
+reload(mech)
+
+%matplotlib inline
+
+g = 9.8
+
+def planarPotential(LinkLengths,LinkMasses):
+    def V_fun(q):
+        theta = np.cumsum(q)
+        height = np.cumsum(LinkLengths * np.sin(theta))
+        return g * np.dot(LinkMasses,height)
+    
+    
+        
+    return V_fun
+
+def planarPosition(LinkLengths):
+    def P_fun(q):
+        theta = np.cumsum(q)
+        positionDiffs = np.vstack([LinkLengths * np.cos(theta),
+                                   LinkLengths * np.sin(theta)])
+        return np.cumsum(positionDiffs,axis=1)
+    
+    return P_fun
+
+def planarKinetic(LinkLengths,LinkMasses):
+    P_fun = planarPosition(LinkLengths)
+    J_fun = ag.jacobian(P_fun)
+    def T_fun(q,q_dot):
+        
+        v = np.dot(J_fun(q),q_dot)
+        v_sq = np.sum(v**2,axis=0)
+        
+        return .5 * np.dot(LinkMasses,v_sq)
+        
+    return T_fun
+        
+
+LinkLengths = np.array([.5,.5])
+LinkMasses = np.array([.4,.4])
+V = planarPotential(LinkMasses,LinkLengths)
+T = planarKinetic(LinkMasses,LinkLengths)
+n = len(LinkLengths)
+q = rnd.randn(n)
+q_dot = rnd.randn(n)
+u = rnd.randn(n)
+sys = mech.LagrangianSystem(T,V)
+
+x0 = np.zeros(2*n)
+u = np.zeros(n)
+
+Time = np.linspace(0,10,100)
+
+dampedVectorField = lambda x,t : sys.vectorField(x,t,-x[int(len(x)/2):])
+
+X = itg.odeint(dampedVectorField,x0,Time)
+plt.plot(Time,X)
+@ 
+
+<<echo=<%=code_mode%>, evaluate = False>>=
+import autograd.numpy as np
+import autograd as ag
+
+
+class LagrangianSystem:
+    def __init__(self,T,V):
+        self.ddTddq_dot = ag.hessian(T,1)
+        self.dVdq = ag.grad(V)
+        
+        self.dTdq = ag.grad(T)
+        dTdq_dot = ag.grad(T,1)
+        self.ddTdq_dotdq = ag.jacobian(dTdq_dot,0)
+        
+        self.T = T
+        self.V = V
+        
+       
+    def massMatrix(self,q):
+        return self.ddTddq_dot(q,np.zeros_like(q))
+    
+    def potentialForce(self,q):
+        return -self.dVdq(q)
+    def coriolisForce(self,q,q_dot):
+        C1 = self.ddTdq_dotdq(q,q_dot)
+        return self.dTdq(q,q_dot) - np.dot(C1,q_dot)
+    
+    def vectorField(self,x,t,u):
+        n = len(u)
+        q = x[:n]
+        q_dot = x[n:]
+        #F = self.coriolisForce(q,q_dot) + self.potentialForce(q) + u
+        M = self.massMatrix(q)
+        #q_ddot = np.linalg.solve(M,F)
+        # q_ddot = self.potentialForce(q) +  u
+        q_ddot = np.linalg.solve(M,self.coriolisForce(q,q_dot) + self.potentialForce(q) +  u)
+        
+        return np.hstack([q_dot,q_ddot])
+        
+@ 
