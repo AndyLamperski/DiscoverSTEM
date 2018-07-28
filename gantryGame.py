@@ -1,12 +1,13 @@
 import numpy as np
+import numpy.random as rnd
 import pyglet
 from pyglet.window import key
 
 
-class oneDGame(pyglet.window.Window):
-    def __init__(self):
+class gantryGame(pyglet.window.Window):
+    def __init__(self,damping):
         
-        super(oneDGame, self).__init__()
+        super(gantryGame, self).__init__()
         
         self.label_top = pyglet.text.Label('Make the green box stop on the white box',
                                       font_size=16,
@@ -42,9 +43,10 @@ class oneDGame(pyglet.window.Window):
 
         # Let's subtract this off so that we start in the middle / left. 
         self.pos = np.array([self.width/8,self.height/2])
+        self.noise_std = 1.
         self.vel = np.zeros(2)
         self.force = np.zeros(2)
-        self.damping = .01
+        self.damping = 0.01
 
         self.forceMag = 100.
 
@@ -62,12 +64,13 @@ class oneDGame(pyglet.window.Window):
 
     def update(self,dt):
 
-        stopped = np.linalg.norm(self.vel) < .5
+        stopped = np.linalg.norm(self.vel) < 2.
         onTarget = np.linalg.norm(self.pos-self.target_pos,ord=np.inf) < (self.target_width-self.cursor_width)/2
         if onTarget and stopped:
             self.close()
-    
-        self.pos = self.pos + self.vel * dt
+
+        noise = self.noise_std * rnd.randn(2) * np.sqrt(dt)
+        self.pos = self.pos + self.vel * dt + noise
         self.vel = self.vel + dt * (self.force - self.damping * self.vel)
 
     
@@ -88,16 +91,30 @@ class oneDGame(pyglet.window.Window):
         elif symbol == key.RIGHT:
             self.force[0] = self.forceMag
 
+        elif symbol == key.UP:
+            self.force[1] = self.forceMag
+        elif symbol == key.DOWN:
+            self.force[1] = -self.forceMag
+        elif symbol == key.ESCAPE:
+            self.close()
+            
     def on_key_release(self,symbol, modifiers):
         if symbol == key.LEFT:
             self.force[0] = 0.
         elif symbol == key.RIGHT:
             self.force[0] = 0.
+        elif symbol == key.UP:
+            self.force[1] = 0.
+        elif symbol == key.DOWN:
+            self.force[1] = 0.
 
-def runOneD():
-    window = oneDGame()
+
+damping = 0.01
+
+def manualControl():
+    window = gantryGame(damping)
     pyglet.app.run()
 
 if __name__ == '__main__':
-    window = oneDGame()
+    window = gantryGame(damping)
     pyglet.app.run()

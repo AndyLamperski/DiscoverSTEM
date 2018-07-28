@@ -17,12 +17,25 @@ Welcome to the Discover STEM session on Programming for Robot Control.
 <<echo=<%=text_echo%>,evaluate = <%=text_evaluate%> >>=
 # This is some code that we will use to test your work. 
 import checker
+import gantryGame
+import matplotlib.pyplot as plt
+%matplotlib inline
+
 @
 
 <<echo=<%=debug_mode%>, evaluate = <%=debug_mode%> >>=
 import checker
+import gantryGame
+import utils as ut
+
 from importlib import reload
 reload(checker)
+reload(ut)
+reload(gantryGame)
+
+import matplotlib.pyplot as plt
+%matplotlib inline
+
 @ 
 
 
@@ -58,7 +71,7 @@ def feedback(result):
       print("oh yeah.")
    else:
       print("nope")
-
+   return result
 def check_array_equality(X,X_test,tol=1e-3,ord=2):
    err = la.norm(X-X_test,ord=ord)
 
@@ -75,10 +88,91 @@ def check_cubed(fun):
 @ 
 
 ## Why we need feedback
-<<echo=<%=debug_echo or text_echo%>, evaluate=False>>=
-import simpleMovement
 
-simpleMovement.runOneD()
+Let's try pushing a block around on a low friction surface. 
+
+<<echo=<%=debug_echo or text_echo%>, evaluate=False>>=
+
+gantryGame.manualControl()
+@ 
+
+
+
+
+<<echo=<%=code_echo%>, evaluate = <%=code_evaluate%> >>=
+import gantryGame
+import matplotlib.pyplot as plt
+import scipy.signal as sp
+import utils as ut
+
+c = gantryGame.damping
+P = ([1.],[1.,c,0])
+
+def unstableRoots(p,tol=1e-8):
+   return np.array([r for r in np.roots(p) if np.real(r) >= -tol])
+
+def testClassicalControl(P,C):
+   C_min = ut.minreal(C)
+   P_min = ut.minreal(P)
+   
+   CL = ut.classicFeedback(P_min,C_min)
+   CL = ut.minreal(CL) 
+   
+
+   # Stability Tests
+   nP,dP = P_min
+   nC,dC = C_min
+   
+   # First check for  pole-zero cancellations
+   nL = np.polymul(nP,nC)
+   dL = np.polymul(dP,dC)
+  
+   L_unstable = unstableRoots(dL)
+   L_min = ut.minreal((nL,dL)) 
+   L_min_unstable = unstableRoots(L_min[1]) 
+   
+   if len(L_unstable) > len(L_min_unstable):
+      print('Unstable Pole-Zero Cancellation.\nYour system will be sensitive input disturbances.\n')
+      return feedback(False)
+   
+   # Now check if the closed-loop system is untable.
+   CL_ZPK = sp.tf2zpk(*CL)
+   if len(unstableRoots(CL_ZPK[1])) > 0:
+      print('Unstable Closed-Loop System\n')
+      return feedback(False)
+   
+   # If all the checks passed, proceed
+   print('You have stabilized the system.\nWe will test its performance') 
+   Time = np.linspace(0,2,100)
+   U = 1 * np.ones_like(Time)
+   Time,SR,_ = sp.lsim(CL,U,Time)
+   plt.plot(Time,SR)
+ 
+   return None
+
+def testPID(kP,kI,kD):
+   C = ([kD,kP,kI],[1.,0.])
+   return testClassicalControl(P,C)
+
+def testPD(kP,kD):
+   return testPID(kP,0.,kD)
+@
+
+<<echo = <%=text_echo%>, evaluate = <%=text_evaluate%> >>=
+# Change these gain values to stabilize your system
+kP = 0.
+kD = 0.
+
+checker.testPD(kP,kD)
+
+@ 
+
+<<echo = <%=debug_echo%>, evaluate = <%=debug_evaluate%>>>=
+
+kP = 1.
+kD = 10.
+
+checker.testPD(kP,kD)
 @ 
 
 <<echo=<%=debug_echo%>,evaluate = <%=debug_evaluate%> >>=
@@ -94,5 +188,4 @@ P_tf = sp.ss2tf(*P)
 omega_0 = 2.
 zeta = .7
 P = ([1.],[1./(omega_0**2), 2 * zeta / omega_0 , 1])
-
 @ 
