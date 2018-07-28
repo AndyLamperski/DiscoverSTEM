@@ -75,7 +75,7 @@ def check_cubed(fun):
 @ 
 
 ## Why we need feedback
-<<echo=<%=debug_echo%>, evaluate=False>>=
+<<echo=<%=debug_echo or text_echo%>, evaluate=False>>=
 import simpleMovement
 
 simpleMovement.runOneD()
