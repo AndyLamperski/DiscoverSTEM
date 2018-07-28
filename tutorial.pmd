@@ -90,12 +90,14 @@ def check_cubed(fun):
 ## Why we need feedback
 
 Let's try pushing a block around on a low friction surface. 
+This is a model of a simple gantry system. Gantry systems are commonly used in 3D printing applications. 
 
 <<echo=<%=debug_echo or text_echo%>, evaluate=False>>=
 
 gantryGame.manualControl()
 @ 
 
+When you finish, a plot of the $X$ and $Y$ positions of the block is generated. 
 
 
 
@@ -142,13 +144,18 @@ def testClassicalControl(P,C):
       return feedback(False)
    
    # If all the checks passed, proceed
-   print('You have stabilized the system.\nWe will test its performance') 
-   Time = np.linspace(0,2,100)
-   U = 1 * np.ones_like(Time)
-   Time,SR,_ = sp.lsim(CL,U,Time)
-   plt.plot(Time,SR)
+   print('You have stabilized the system.\nWe will test its performance\n') 
+   Time = np.linspace(0,5,500)
+   
+   for p,e in zip(gantryGame.pos,gantryGame.error):
+      U = e * np.ones_like(Time)
+      Time,SR,_ = sp.lsim(CL,U,Time)
+      plt.plot(Time,SR+p)
  
-   return None
+   plt.legend(['X','Y'],loc='best')
+   plt.xlabel('Time')
+   plt.ylabel('Position')
+   return feedback(True)
 
 def testPID(kP,kI,kD):
    C = ([kD,kP,kI],[1.,0.])
@@ -175,17 +182,15 @@ kD = 10.
 checker.testPD(kP,kD)
 @ 
 
-<<echo=<%=debug_echo%>,evaluate = <%=debug_evaluate%> >>=
+Play around with the various values of $k_P$ and $k_D$ to see how the performance of the simulation changes. The behavior here will be slightly different from the behavior of the earlier test. This is because the graphic simulation models disturbances on the system, while the test does not. These disturbances capture the effects such as wind and surface imperfections. 
 
-# This is just some testing code
-import systems as dsys
-import scipy.signal as sp
-reload(dsys)
+<<echo=<%=debug_echo or text_echo%>,evaluate = False >>=
+# See what happens when you change the values of kP and kD
+# You can set the values in the space here.
 
-P = dsys.dcMotor().sys
-P_tf = sp.ss2tf(*P)
+kP = 0.
+kD = 0.
 
-omega_0 = 2.
-zeta = .7
-P = ([1.],[1./(omega_0**2), 2 * zeta / omega_0 , 1])
+# 
+gantryGame.pdControl(kP,kD)
 @ 
