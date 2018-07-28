@@ -1,3 +1,8 @@
+# Oh hey. 
+
+Welcome to the Discover STEM session on Programming for Robot Control.
+
+
 <<switches, echo=False, evaluate=True>>=
 text_echo = text_mode and not debug_mode
 text_evaluate = False
@@ -7,21 +12,39 @@ debug_echo = debug_mode
 debug_evaluate = debug_mode
 @ 
 
-# Oh hey. 
-
-Welcome to the Discover STEM session on Programming for Robot Control.
 
 
 # Introduction to Python
 
+## Jupyter Notebooks
+
+If you're reading this, you are looking at a "Jupyter notebook". Jupyter notebooks allow you to easily mix text, 
+$\sqrt{math}$, and code:
+
+<< echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+complex_calculation = 1 + 1
+print('The result of this calculation is: ', complex_calculation)
+@ 
+
+The block above is known as a "code cell". There are a few ways to run a code cell. 
+* Click the "Run" button at the top of the page.
+* Click the "Run" button to the left of the cell. (Older versions of Jupyter notebooks might not have these buttons.)
+* Press `Shift-Enter` on the keyboard.
+
+Read the code in the cell above, and think about what you think it will do. Then run the cell and see what *really* happens. 
+
+The cell below loads the code that we will use in the tutorial. Run this cell. 
+
 <<echo=<%=text_echo%>,evaluate = <%=text_evaluate%> >>=
-# This is some code that we will use to test your work. 
+# Definitely do run this cell.
 import checker
 import gantryGame
 import matplotlib.pyplot as plt
 %matplotlib inline
-
+print('We are ready to roll.')
 @
+
+Did you run the cell?
 
 <<echo=<%=debug_mode%>, evaluate = <%=debug_mode%> >>=
 import checker
@@ -39,6 +62,7 @@ import matplotlib.pyplot as plt
 @ 
 
 
+\
 
 ## Problem
 
@@ -194,3 +218,7 @@ kD = 0.
 # 
 gantryGame.pdControl(kP,kD)
 @ 
+
+# Challenge Problems
+
+If this is not your first rodeo, you might finish the problem early. Here are some challenge problems. 
