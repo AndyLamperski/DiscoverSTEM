@@ -150,6 +150,42 @@ def check_the_answer(ans):
         
 @ 
 
+### Lists and Loops
+
+Computers are great at doing the same thing over and over and over and over and over again. 
+One of the main tricks to get repetitive behavior in a program is called a "for loop". 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# This is a list.
+margotList = ['Margot','is', 'a', 'dog']
+
+for word in margotList:
+    print(word)
+@ 
+
+This is Margot. 
+<img src="figures/margot.JPG" alt="Margot" width="300px"/>
+
+Here is another example of working with lists and loops.
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%>>>=
+print('Here is a list of the first five non-negative numbers') 
+numList = range(5)
+print(numList)
+
+# Here is an empty list
+squareList = []
+
+# We will fill the list using the append command
+for num in numList:
+    # This is how exponents are written in Python
+    numSquared = num**2
+    squareList.append(numSquared)
+    
+print('Here is a list of the first five squared numbers')
+print(squareList)
+@ 
+
 ### Functions
 
 
@@ -229,7 +265,7 @@ next. We'll need some math in order to do that.
 
 ## Math background
 
-The next few questions will 
+The next few questions will step through the basics of simulation.
 
 ### Question
 A few days ago, I left my house at 4 AM and walked 25 miles per hour. 
@@ -266,7 +302,92 @@ checker.check_distance(distance)
 
 ### Question
 
-The next day, I started walking at midnight. This, time, however, I didn't walk the same speed the whole time. 
+The next day, I started walking at midnight and I walked for 10 hours. This day however, I didn't walk the same speed the whole time. Instead, I had a different speed every hour. Make a list  called `cumulative_distance` that shows the total distance I travelled at each hour. The list should start at 0 and have a total of 11 entries.  
+
+<<echo=<%=code_echo%>, evaluate=True>>=
+speeds = [40, 30, 30, 25, 25, 35, 30, 20, 10, 5]
+def checkCD(ans):
+    true_ans = np.hstack([0,np.cumsum(speeds)])
+    check_array_equality(np.array(ans),true_ans)
+    plt.plot(ans)
+@ 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# These are my walking speeds.
+speeds = <%=speeds%>
+
+# So, the first few entries of the list should be
+# 0, <%=speeds[0]%>, <%=speeds[0]+speeds[1]%>, . . . 
+
+
+
+checker.checkCD(cumulative_distance)
+@
+
+<<echo=<%=debug_mode%>, evaluate=<%=debug_mode%>>>=
+speeds = <%=speeds%>
+
+cur_distance = 0
+cumulative_distance = [cur_distance]
+for s in speeds:
+    cur_distance = s + cur_distance
+    cumulative_distance.append(cur_distance)
+    
+checker.checkCD(cumulative_distance)
+@ 
+
+### Question
+
+I took a rest for a few hours, and then starting at noon, I walked for 10 more hours. This time, however, I changed my speed every minute. 
+
+<<echo=<%=code_echo%>, evaluate = <%=code_evaluate%> >>=
+numSteps = 60 * 10
+dt = 1./60.
+Time = np.linspace(0,10-dt,numSteps)
+minuteTimes = Time
+minuteSpeeds = np.exp(-.5 * minuteTimes)*(1 + np.sin( 2*np.pi*Time))
+minuteSpeeds = 250 * minuteSpeeds / (dt * np.sum(minuteSpeeds))
+
+def checkMD(ans):
+    trueAns = np.hstack([0,dt * np.cumsum(minuteSpeeds)])
+    check_array_equality(ans,trueAns)
+    plt.plot(dt * np.arange(numSteps+1),ans)
+@ 
+
+<<echo=<%=text_echo or debug_echo%>, evaluate=<%=debug_evaluate%> >>=
+# Run this cell to see how fast I walked.
+minuteTimes = checker.minuteTimes
+minuteSpeeds = checker.minuteSpeeds
+plt.plot(minuteTimes,minuteSpeeds)
+@
+
+Now make a list called `minute_distance` that contains the cumulative distance that I walked at each minute. 
+As before, your list should start from zero, leading to a total of <%=60*10 + 1%> entries. 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# Make your list here
+# You will need to use the list minuteSpeeds.
+# As long as you have run the previous cell
+# minuteSpeeds should be available
+
+
+
+checker.checkMD(minute_distance)
+@ 
+
+<<echo=<%=debug_echo%>, evaluate=<%=debug_evaluate%> >>=
+
+dt = 1./60.
+
+cur_distance = 0.
+minute_distance = [cur_distance]
+
+for s in minuteSpeeds:
+    cur_distance = cur_distance + dt * s
+    minute_distance.append(cur_distance)
+    
+checker.checkMD(minute_distance)
+@ 
 
 ## Derivatives, integrals, and all that. 
 
