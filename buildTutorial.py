@@ -1,5 +1,5 @@
 import pweave as pw
-import utils as ut
+import discoverSTEM.utils as ut
 
 filename = 'tutorial.pmd'
 tutorial_text = ut.set_pweave_variables(filename,{'text_mode' : True,
