@@ -37,8 +37,8 @@ The cell below loads the code that we will use in the tutorial. Run this cell.
 
 <<echo=<%=text_echo%>,evaluate = <%=text_evaluate%> >>=
 # Definitely do run this cell.
-import checker
-import gantryGame
+import discoverSTEM.checker as checker
+import discoverSTEM.gantryGame as gantryGame
 import matplotlib.pyplot as plt
 %matplotlib inline
 print('We are ready to roll.')
@@ -46,10 +46,11 @@ print('We are ready to roll.')
 
 Did you run the cell?
 
+
 <<echo=<%=debug_mode%>, evaluate = <%=debug_mode%> >>=
-import checker
-import gantryGame
-import utils as ut
+import discoverSTEM.checker as checker
+import discoverSTEM.gantryGame as gantryGame
+import discoverSTEM.utils as ut
 
 from importlib import reload
 reload(checker)
@@ -61,8 +62,27 @@ import matplotlib.pyplot as plt
 
 @ 
 
+## What is Python?
 
-\
+Python is a sweet programming language. We will use it for the tutorial.
+
+The first program you'll see in any programming language is "Hello, World!". All it does is print "Hello, World!" to the screen. 
+
+https://en.wikipedia.org/wiki/%22Hello,_World!%22_program
+
+Here is how "Hello, World!" works in Python. Run the cell below.
+
+<<echo = <%=text_echo%>, evaluate = <%=text_evaluate%> >>=
+print('Oh hey.')
+@ 
+
+That can't be right. It was supposed to print "Hello, World!". We got something else. 
+Fix the code above to get a real "Hello, World!" program.
+
+
+
+
+
 
 ## Problem
 
@@ -81,7 +101,6 @@ cubed = lambda x : x**3
 checker.check_cubed(cubed)
 @ 
 
-
 <<echo=<%=code_echo%>,evaluate = <%=code_evaluate%> >>=
 # This is the main checker code 
 import numpy as np
@@ -89,6 +108,13 @@ import numpy.random as rnd
 import scipy.linalg as la
 import scipy.signal as sp
 import systems as dsys
+
+import discoverSTEM.gantryGame as gantryGame
+import matplotlib.pyplot as plt
+import scipy.signal as sp
+import utils as ut
+
+
 
 def feedback(result):
    if result:
@@ -114,7 +140,10 @@ def check_cubed(fun):
 ## Why we need feedback
 
 Let's try pushing a block around on a low friction surface. 
-This is a model of a simple gantry system. Gantry systems are commonly used in 3D printing applications. 
+This model is sometimes known as "Cartesian coordinate robot", a "linear robot", or a "gantry robot". 
+These types of robots are commonly used in 3D printing applications.  
+
+https://en.wikipedia.org/wiki/Cartesian_coordinate_robot
 
 <<echo=<%=debug_echo or text_echo%>, evaluate=False>>=
 
@@ -126,10 +155,6 @@ When you finish, a plot of the $X$ and $Y$ positions of the block is generated.
 
 
 <<echo=<%=code_echo%>, evaluate = <%=code_evaluate%> >>=
-import gantryGame
-import matplotlib.pyplot as plt
-import scipy.signal as sp
-import utils as ut
 
 c = gantryGame.damping
 P = ([1.],[1.,c,0])
