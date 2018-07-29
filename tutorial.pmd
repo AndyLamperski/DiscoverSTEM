@@ -77,14 +77,95 @@ print('Oh hey.')
 @ 
 
 That can't be right. It was supposed to print "Hello, World!". We got something else. 
-Fix the code above to get a real "Hello, World!" program.
+Fix the code above to get a real "Hello, World!" program. 
+
+Now we will explore some of the basics of Python.
+
+### Comments
+
+As with most languages, Python allows you to make comments. 
+Comments are pieces of text that you can put in your code to make it easier to read. 
+However, they don't do anything when you run the code. Try to guess what the code below will do. 
+
+<<echo = <%=text_echo%>, evaluate = <%=text_evaluate%> >>=
+# This is a comment.
+
+# Let's calculate the force on a particle accelerated by gravity
+mass = 10. 
+acceleration = -9.8 
+force = mass * acceleration 
+
+print('May the',force,'be with you')
+@ 
+
+Run the cell to see if your guess was correct. 
+
+### Variables
+
+The the code cell above, `mass`, `acceleration`, and `force` are all variables. Variables can be used to keep track of data 
+during computations. It is always good practice to make variable names which are easy to understand. Consider, instead, the following code, which does the same thing.
+
+<<echo =<%=text_echo%>, evaluate = <%=text_evaluate%> >>=
+# This is a comment.
+
+# Let's calculate the force on a particle accelerated by gravity
+asdofdoadkfla = 10.0
+asdgasddoaijgda = -9.8
+aslgpasdlkg = asdofdoadkfla * asdgasddoaijgda
+
+print('May the',aslgpasdlkg,'be with you')
+@ 
+
+Even with the comments, it is not all that obvious what the variables are supposed to mean.
+
+### Question
+
+Make a variable called `the_answer`, which holds the answer to [life, the universe and everything](https://en.wikipedia.org/wiki/42_(number)).  
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# Make your variable here
 
 
 
+# Don't modify the code below here
+# This is what checks your work.
+checker.check_the_answer(the_answer)
+@
+
+<<echo = <%=debug_echo%>, evaluate = <%=debug_evaluate%> >>=
+# Make your variable here
+
+the_answer = 42
+checker.check_the_answer(the_answer)
+@
+
+<<echo = <%=code_echo%>, evaluate = <%=code_evaluate%>>>=
+def check_the_answer(ans):
+    if isinstance(ans,int):
+        if ans == 42:
+            print('Yes.')
+            return
+    print('No. You may wish to contemplate this for a few million more years.')
+    return
+        
+        
+@ 
+
+### Functions
 
 
 
-## Problem
+<< echo=<%=text_echo%>, evaluate = <%=text_evaluate%> >>=
+# This is a simple function
+def squared(x):
+    return x**2
+
+print(1,'squared is',squared(1))
+print(2,'squared is',squared(2))
+print(the_answer,'squared is',squared(the_answer))
+@ 
+
+### Question 
+
 
 Write a function called `cubed` that takes a number, $x$, as input and returns its cube, $x^3$.
 
@@ -92,7 +173,7 @@ Write a function called `cubed` that takes a number, $x$, as input and returns i
 # Write your code here. 
 
 
-# Don't modify this line. It is used to test your code.
+# Don't modify the line below. It is used to test your code.
 checker.check_cubed(cubed)
 @ 
 
@@ -136,6 +217,65 @@ def check_cubed(fun):
    Y_test = np.array([fun(x) for x in X])
    check_array_equality(Y,Y_test)
 @ 
+# Dynamic Modeling
+Things that move or change over time are called *dynamic systems*. Here are some dynamic systems
+* Robots
+* Gas prices
+* The wolf population
+
+In order to study the behavior of dynamic systems, we need some way of
+describing how things change from one instant of time to the
+next. We'll need some math in order to do that. 
+
+## Math background
+
+The next few questions will 
+
+### Question
+A few days ago, I left my house at 4 AM and walked 25 miles per hour. 
+How far did I walk by midnight?
+
+<<echo=<%=code_echo%>, evaluate=<%=code_evaluate%> >>=
+def check_distance(miles):
+    milesTrue = 25 * 20
+    if np.abs(miles-milesTrue) < 1e-3:
+        print('Yes. And I would walk 500 more.')
+    else:
+        print('No. Check your calculations again.')
+@ 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# Put your answer in a variable called distance.
+# distance should be in miles. 
+
+
+
+# Again, don't change this line. This is the checker
+checker.check_distance(distance)
+@ 
+
+<<echo=<%=debug_echo%>, evaluate=<%=debug_evaluate%> >>=
+# Put your answer in a variable called distance.
+# You can make other variables to help with the calculation.
+
+distance = 500
+
+# Again, don't change this line. This is the checker
+checker.check_distance(distance)
+@
+
+### Question
+
+The next day, I started walking at midnight. This, time, however, I didn't walk the same speed the whole time. 
+
+## Derivatives, integrals, and all that. 
+
+
+
+
+
+
+
 
 ## Why we need feedback
 
