@@ -2,7 +2,6 @@ import numpy as np
 import sympy as sym
 import scipy.linalg as la
 import scipy.signal as sp
-import utils as ut
 
 def set_pweave_variables(filename,kwargs, options = { 'echo' : False },newname=None):
     optKeys = options.keys()
