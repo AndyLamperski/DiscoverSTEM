@@ -47,10 +47,11 @@ print('We are ready to roll.')
 Did you run the cell?
 
 
-<<echo=<%=debug_mode%>, evaluate = <%=debug_mode%> >>=
+<<echo=<%=debug_echo%>, evaluate = <%=debug_evaluate%> >>=
 import discoverSTEM.checker as checker
 import discoverSTEM.gantryGame as gantryGame
 import discoverSTEM.utils as ut
+import numpy as np
 
 from importlib import reload
 reload(checker)
@@ -157,7 +158,7 @@ One of the main tricks to get repetitive behavior in a program is called a "for 
 
 <<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
 # This is a list.
-margotList = ['Margot','is', 'a', 'dog']
+margotList = ['Margot','is', 'a', 'dog','and','I','love','her']
 
 for word in margotList:
     print(word)
@@ -166,25 +167,45 @@ for word in margotList:
 This is Margot. 
 <img src="figures/margot.JPG" alt="Margot" width="300px"/>
 
-Here is another example of working with lists and loops.
+Each entry in `margotList` is a piece of text known as a "string". 
+In the next example, we will use a for loop to extract the shortest strings 
+from `margotList`. In particular, the result should be a list containing `a`
+and `I`.
+
+The code also introduces some useful tricks such as `if`, `elif`, `len`, and `append`.
 
 <<echo=<%=text_echo%>, evaluate=<%=text_evaluate%>>>=
-print('Here is a list of the first five non-negative numbers') 
-numList = range(5)
-print(numList)
+# We initialize the list
+shortest_strings = [margotList[0]]
+# Here margotList[0] is the first entry of the list.
 
-# Here is an empty list
-squareList = []
-
-# We will fill the list using the append command
-for num in numList:
-    # This is how exponents are written in Python
-    numSquared = num**2
-    squareList.append(numSquared)
-    
-print('Here is a list of the first five squared numbers')
-print(squareList)
+for word in margotList:
+    # Throughout the loop
+    # shorest_strings will be a list containing
+    # the shorest strings that we have encountered
+    # In particular, all entries of shortest_strings
+    # will have the same length
+    if len(word) < len(shortest_strings[0]):
+        # here len(word) is the length of word.
+        #
+        # In this case, we found a string that is
+        # shorter than anything we've seen.
+        # so we restart the list 
+        # now only containing this new word
+        shortest_strings = [word]
+    elif len(word) == len(shortest_strings[0]):
+        # elif is short for "else if"
+        # 
+        # in this case, we found another word
+        # that has the exact same length
+        # as our other shortest strings.
+        # So we add it to the list using append
+        shortest_strings.append(word)
+        
+print(shortest_strings)
 @ 
+
+
 
 ### Functions
 
@@ -238,20 +259,43 @@ def feedback(result):
    else:
       print("nope")
    return result
-def check_array_equality(X,X_test,tol=1e-3,ord=2):
+
+
+def check_array_equality(X,X_test,tol=1e-3,ord=2,final=True):
    err = la.norm(X-X_test,ord=ord)
 
    passed = err < tol
-   feedback(passed)
+   if final:
+       feedback(passed)
    return passed
       
+def check_array_list_equality(X,X_test,tol=1e-3,ord=2):
+    for x,x_test in zip(X,X_test):
+        passed = check_array_equality(x,x_test,
+                                      tol=tol,ord=ord,final=False)
+        if not passed:
+            feedback(passed)
+            return passed
+    feedback(passed)
+    return passed
 
 def check_cubed(fun):
    X = rnd.randn(10)
    Y = X**3
    Y_test = np.array([fun(x) for x in X])
    check_array_equality(Y,Y_test)
+@
+
+Later in the tutorial, we will need functions that take multiple variables as inputs. This is done by just separating the inputs by commas:
+
+<<echo=<%=text_echo%>, evaluate = <%=text_evaluate%>>>=
+def add_three_numbers(x,y,z):
+    the_sum = x + y + z
+    return the_sum
+
+print('I added some numbers:',add_three_numbers(1,2,the_answer))
 @ 
+
 # Dynamic Modeling
 Things that move or change over time are called *dynamic systems*. Here are some dynamic systems
 * Robots
@@ -262,7 +306,7 @@ In order to study the behavior of dynamic systems, we need some way of
 describing how things change from one instant of time to the
 next. We'll need some math in order to do that. 
 
-## Math background
+## Simulation Warm-up Questions
 
 The next few questions will step through the basics of simulation.
 
@@ -303,6 +347,8 @@ checker.check_distance(distance)
 
 The next day, I started walking at midnight and I walked for 10 hours. This day however, I didn't walk the same speed the whole time. Instead, I had a different speed every hour. Make a list  called `cumulative_distance` that shows the total distance I travelled at each hour. The list should start at 0 and have a total of 11 entries.  
 
+Hint: Use a for loop. Also, it might help to make a new variable that 
+keeps track of how far I walked so far. 
 <<echo=<%=code_echo%>, evaluate=True>>=
 speeds = [40, 30, 30, 25, 25, 35, 30, 20, 10, 5]
 def checkCD(ans):
@@ -388,14 +434,227 @@ for s in minuteSpeeds:
 checker.checkMD(minute_distance)
 @ 
 
-## Derivatives, integrals, and all that. 
+Congratulations, you have made a simulation.
+
+## General Principles of Simulation
+
+In the questions above, you calculated my walking distance
+by using formulas that resemble:
+\begin{equation*}
+(\textrm{New Distance}) = (\textrm{Current Distance}) 
++ (\textrm{Speed}) \times (\textrm{Duration})
+\end{equation*}
+
+The same basic idea can be used to simulate any dynamic system, from robots to wolf populations. In this more general context, we call the variables that change over time the **state**. Then the **state update equation** that we use for simulation becomes.
+\begin{equation*}
+(\textrm{New State}) = (\textrm{Current State}) 
++ (\textrm{Rate of Change}) \times (\textrm{Duration})
+\end{equation*}
+
+In the walking example, the state was the distance travelled. In general, however, the state will be a collection of variables. For example, if you threw a ball in the air and wanted to describe how it moves, the state would be: 
+\begin{equation*}
+\textrm{State} = \begin{bmatrix}
+\textrm{Position} \\
+\textrm{Velocity}
+\end{bmatrix}
+\end{equation*}
+
+
+Approximating the behavior of a dynamic system using state update equation is known as the *Euler method*. 
+It was described by mathematician Leonhard Euler in 1768. 
+Even before computers and simulations, this method for approximating dynamics was important since the behavior of most dynamic systems cannot be computed exactly.  
+
+
+https://en.wikipedia.org/wiki/Euler_method
+
+## More Python: `numpy`
+
+We would like a convenient method for evaluating the state update
+equation when the state has many variables. In particular, we would
+like to evaluate the operations of $+$ and $\times$ on many variables
+at once. The most popular Python tool for calculating with many
+variables is called `numpy`. 
+
+Here are some examples of how to use `numpy`. 
+
+<<echo=<%=text_echo%>, evaluate =<%=text_evaluate%> >>=
+# We need to first load it using import
+import numpy as np
+
+# We can store multiple numbers in arrays
+x = np.array([1,2,3])
+y = np.array([4,5,6])
+
+print('x:',x)
+print('y:',y)
+
+# We can add two arrays
+z = x + y
+print('x+y:',z)
+
+# We can multiply an array by a number
+w = 2 * x
+print('2*x:', w)
+
+# We can access individual entries using indices:
+print('the first and second entry of x:',x[0],x[1])
+# Note that indices start at 0. 
+@ 
+
+When we did $x+y$, each entry of $x$ was added to a corresponding entry of $y$. When we did $2*x$, each entry of $x$ was multiplied by $2$. 
+
+### Question
+
+Write a function called `stateUpdate` which evaluates the state update equation. It should
+take three inputs:
+* `current_state`
+* `rate_of_change`
+* `duration`
+and return `next_state`.
+
+You can assume that `current_state` and  `rate_of_change` are `numpy` arrays, so that adding arrays and multiplying by numbers behave as we saw. 
+
+<<echo = <%=code_echo%>, evaluate =<%=code_evalute%> >>=
+def checkStateUpdate(fun):
+    N = rnd.randint(1,10,10)
+    X = [rnd.randn(n) for n in N]
+    F = [rnd.randn(n) for n in N]
+    H = rnd.randn(len(N))
+    
+    trueFun = lambda x,f,h : x + h * f
+    trueAns = [trueFun(x,f,h) for x,f,h in zip(X,F,H)]
+    testAns = [fun(x,f,h) for x,f,h in zip(X,F,H)]
+    
+    check_array_list_equality(trueAns,testAns)
+@ 
+
+<<echo=<%=debug_echo%>, evaluate=<%=debug_evaluate%> >>=
+# Write your function here
+
+def stateUpdate(current_state,rate_of_change,duration):
+    return current_state + rate_of_change * duration
+
+# This is the checker
+checker.checkStateUpdate(stateUpdate)
+@ 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+<<echo=<%=debug_echo%>, evaluate=<%=debug_evaluate%> >>=
+# Write your function here
 
 
 
+# This is the checker
+checker.checkStateUpdate(stateUpdate)
+@ 
+
+## Simulating Physical Systems
+
+The most important formula is Newton's second law:
+
+\begin{equation*}
+\textrm{Force} = \textrm{Mass} \times \textrm{Acceleration}
+\end{equation*}
+
+Seriously. This is the most important formula. Period. 
+
+Let's think about throwing a ball into the air. Ignoring the effects of wind, the only force on the ball is due to gravity, in this case the force in the vertical direction is:
+\begin{equation*}
+\textrm{Force} = -\textrm{Mass} \times g 
+\end{equation*}
+where $g$ is the gravitational constant, which has the value $g = 9.8 m / s^2$. 
+
+Comparing this with Newton's second law, we see that the mass terms cancel, and we get
+\begin{equation*}
+Acceleration = -g
+\end{equation*}
+
+How does this help us simulate the flight of the ball? For this we use the following relationships:
+* **velocity** is the rate of change of **position**
+* **acceleration** is the rate of change of **velocity**
+
+### Question
+
+Assume that the ball system is given by 
+\begin{equation*}
+\textrm{State} = \begin{bmatrix}
+\textrm{Position} \\
+\textrm{Velocity}
+\end{bmatrix}
+\end{equation*}
+and assume that $g = 9.8$. 
+Write a function that takes an input `current_state`, which is a `numpy` array, and returns another `numpy` array that holds the rate of change of the state. 
+
+<<echo=<%=code_echo%>, evaluate=<%=code_evaluate%> >>=
+def checkBallDynamics(fun):
+    trueFun = lambda x : np.array([x[1],-9.8])
+    X = rnd.randn(10,2)
+    F_true = [trueFun(x) for x in X]
+    F_test = [fun(x) for x in X]
+    
+    check_array_list_equality(F_true,F_test)
+@ 
+
+ 
+<<echo=<%=debug_echo%>, evaluate=<%=debug_evaluate%> >>=
+# Call your function ballDynamics
+
+def ballDynamics(x):
+    v = x[1]
+    g = 9.8
+    return np.array([v,-g])
+
+# This is the checker
+checker.checkBallDynamics(ballDynamics)
+@ 
+
+The ball in flight is one of the few dynamic systems whose behavior can be computed exactly. The code below computes the exact solutions and then compares the result with approximate solution computed via simulation. The simulation uses the functions that you have written. 
+
+The simulation approximates the state values for `NumSteps` values over the time interval $[0,2]$. So, the larger the value of `NumSteps`, the finer we are breaking up the interval. As `NumSteps` gets larger, the simulation becomes more accurate. (Think about why?) Try out the code for a few different values of `NumSteps` to see what happens. 
+
+<<echo=<%=text_echo or debug_echo%>, evaluate=<%=text_evaluate or debug_evaluate%> >>=
+# Number of steps we will simulate
+NumSteps = 100
+
+# Starts on the ground and is thrown up with velocity of 10 m/s
+initial_state = np.array([0,10.])
+
+Time = np.linspace(0,2,NumSteps)
+
+g = 9.8
+
+def analyticSolution(initial_state,Time):
+    # For this problem
+    p0,v0 = initial_state
+    Velocity = v0 - g * Time
+    Position = p0 + v0 * Time - .5 * g * Time**2
+    return np.column_stack([Position,Velocity])
+
+# For the simulation we make a copy of the initial 
+# state, which we will update.
+cur_state = np.copy(initial_state)
+States_sim = np.zeros((NumSteps,2))
+
+States_sim[0] = cur_state
+
+for t in range(NumSteps-1):
+    duration = Time[t+1] - Time[t]
+    rate = ballDynamics(cur_state)
+    cur_state = stateUpdate(cur_state,rate,duration)
+    States_sim[t+1] = cur_state
 
 
+States_Exact = analyticSolution(initial_state,Time)
+plt.plot(Time,States_Exact[:,0])
+plt.plot(Time,States_sim[:,0])
+plt.legend(('Exact','Simulated'))
+plt.xlabel('Time')
+plt.ylabel('Height')
+@ 
 
+## Simulating a Wheeled Robot
 
+You are now ready to build the equations to simulate a robot. A simple wheeled robot model. 
 
 ## Why we need feedback
 
@@ -504,6 +763,3 @@ kD = 0.
 gantryGame.pdControl(kP,kD)
 @ 
 
-# Challenge Problems
-
-If this is not your first rodeo, you might finish the problem early. Here are some challenge problems. 

@@ -3,6 +3,7 @@
 Oh hey. Here is the code for our tutorial session. 
 
 # Running the Code
+
 To get started do the following thing.
 
 * Open a terminal. 
@@ -30,3 +31,5 @@ jupyter notebook
 
 * Press `Enter`
 * Click on `tutorial_notebook.ipynb`
+
+ 
