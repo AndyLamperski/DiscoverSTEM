@@ -228,7 +228,7 @@ import scipy.signal as sp
 import discoverSTEM.gantryGame as gantryGame
 import matplotlib.pyplot as plt
 import scipy.signal as sp
-import utils as ut
+import discoverSTEM.utils as ut
 
 
 
