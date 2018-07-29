@@ -47,6 +47,7 @@ class gantrySim(pyglet.window.Window):
 
     def on_window_close(self):
         plt.plot(self.TimeTraj,np.array(self.PosTraj))
+        
     def update(self,dt):
         
         stopped = np.linalg.norm(self.vel) < 2.
