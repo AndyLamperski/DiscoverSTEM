@@ -11,3 +11,5 @@ git clone https://github.com/AndyLamperski/DiscoverSTEM.git
 cd DiscoverSTEM
 ./buildEnvironment
 ```
+
+* Press `Enter`

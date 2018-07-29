@@ -224,7 +224,6 @@ import numpy as np
 import numpy.random as rnd
 import scipy.linalg as la
 import scipy.signal as sp
-import systems as dsys
 
 import discoverSTEM.gantryGame as gantryGame
 import matplotlib.pyplot as plt
