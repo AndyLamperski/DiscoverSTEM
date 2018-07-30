@@ -35,9 +35,9 @@ class unicycleSim(pyglet.window.Window):
         self.vertexMatDiff = vertexMat - np.tile(pos,(numVertices,1))
 
         
-        pos = np.array([self.width//8,self.height//8])
+        pos = np.array([self.width//8,(1*self.height//8)])
 
-        self.x = np.hstack([pos,0])
+        self.x = np.hstack([pos,np.pi])
         
         # Make the target
         vertexTuple = (0,0,
@@ -149,26 +149,24 @@ class unicycleGame(unicycleSim):
             self.v = 0.
 
 def closedLoopDynamics(x,u,dt,target_pos):
-    err = target_pos - x[:2]
+    err = x[:2] - target_pos
     alpha = np.arctan2(err[1],err[0])
     theta = x[2]
 
-    print(err,np.cos(theta-alpha))
-    if np.cos(theta-alpha) > 0:
+    if np.cos(theta-alpha) < 0:
         v = 100.
     else:
         v = 0.
 
-    if np.sin(theta-alpha) > 0:
-        omega = -1.
-    else:
-        omega = 1.
+    omega = np.sin(theta - alpha)
 
+    # omega = 0.
+    
     u = np.array([v,omega])
     
     return basicDynamics(x,u,dt,target_pos)
 
 if __name__ == '__main__':
-    window = unicycleGame()
-    # window = unicycleSim(closedLoopDynamics)
+    # window = unicycleGame()
+    window = unicycleSim(closedLoopDynamics)
     pyglet.app.run()
