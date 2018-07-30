@@ -19,5 +19,5 @@ pw.tangle(code_text,informat='noweb',output = 'discoverSTEM/checker.py')
 pw.weave(tutorial_text,informat='noweb',doctype='notebook',
          output = 'tutorial_notebook.ipynb')
 
-pw.weave(debug_text,informat='noweb',doctype='notebook',
-         output = 'debug_notebook.ipynb')
+# pw.weave(debug_text,informat='noweb',doctype='notebook',
+#          output = 'debug_notebook.ipynb')

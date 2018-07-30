@@ -510,7 +510,7 @@ When we did $x+y$, each entry of $x$ was added to a corresponding entry of $y$. 
 ### Question
 
 Write a function called `stateUpdate` which evaluates the state update equation. It should
-take three inputs:
+take three inputs, in this order:
 * `current_state`
 * `rate_of_change`
 * `duration`
@@ -1009,6 +1009,13 @@ def angularError(currentState,target_pos):
     return angleErr
 @ 
 
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%>>>=
+# Call your funtion unicycleFeedback
+
+
+# We will test it in a simulation
+unicycleSim.runFeedback(unicycleDynamics,unicycleFeedback)
+@ 
 
 <<echo=<%=debug_echo%>, evaluate=False >>=
 # Call your feedback strategy unicycleFeedback
