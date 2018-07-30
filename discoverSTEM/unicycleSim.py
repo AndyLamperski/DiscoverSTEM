@@ -213,17 +213,23 @@ def feedbackPolicy(x):
     u = np.array([v,omega])
     return u
  
-    
+import numpy.random as rnd
+
 def runGame(dynamics):
+    dynamics(rnd.randn(3),rnd.randn(2))
     window = unicycleGame(dynamics)
     pyglet.app.run()
 def runSequence(dynamics,U):
+    dynamics(rnd.randn(3),rnd.randn(2))
+             
     window = unicycleOpenLoop(dynamics,U)
     pyglet.app.run()
     err = window.x[:2] - window.target_pos
     print('Distance from Target: %g' % np.linalg.norm(err))
 
 def runFeedback(dynamics,policy):
+    dynamics(rnd.randn(3),rnd.randn(2))
+    policy(rnd.randn(3))
     window = unicycleClosedLoop(dynamics,policy)
     pyglet.app.run()
     
