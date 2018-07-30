@@ -39,6 +39,7 @@ The cell below loads the code that we will use in the tutorial. Run this cell.
 # Definitely do run this cell.
 import discoverSTEM.checker as checker
 import discoverSTEM.gantryGame as gantryGame
+import discoverSTEM.unicycleSim as unicycleSim
 import matplotlib.pyplot as plt
 %matplotlib inline
 print('We are ready to roll.')
@@ -50,6 +51,8 @@ Did you run the cell?
 <<echo=<%=debug_echo%>, evaluate = <%=debug_evaluate%> >>=
 import discoverSTEM.checker as checker
 import discoverSTEM.gantryGame as gantryGame
+import discoverSTEM.gantryGame as gantryGame
+import discoverSTEM.unicycleSim as unicycleSim
 import discoverSTEM.utils as ut
 import numpy as np
 
@@ -57,6 +60,7 @@ from importlib import reload
 reload(checker)
 reload(ut)
 reload(gantryGame)
+reload(unicycleSim)
 
 import matplotlib.pyplot as plt
 %matplotlib inline
@@ -539,7 +543,6 @@ checker.checkStateUpdate(stateUpdate)
 @ 
 
 <<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
-<<echo=<%=debug_echo%>, evaluate=<%=debug_evaluate%> >>=
 # Write your function here
 
 
@@ -606,6 +609,14 @@ def ballDynamics(x):
 
 # This is the checker
 checker.checkBallDynamics(ballDynamics)
+@
+
+<<echo = <%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# Call your function ballDynamics
+
+
+# This is the checker
+checker.checkBallDynamics(ballDynamics)
 @ 
 
 The ball in flight is one of the few dynamic systems whose behavior can be computed exactly. The code below computes the exact solutions and then compares the result with approximate solution computed via simulation. The simulation uses the functions that you have written. 
@@ -668,6 +679,7 @@ y-\textrm{position} \\
 \textrm{heading direction}
 \end{bmatrix}
 \end{equation*}
+This model is often called the *unicycle*. Recall that $\theta$ is the Greek letter $\theta$.
 
 The corresponding rate of change for the state is given by:
 \begin{equation*}
@@ -678,7 +690,10 @@ v \sin(\theta) \\
 \end{bmatrix}
 \end{equation*}
 
-Here $v$ is the *linear velocity input* and $\omega$ is the *angular velocity input*. These are variables that can be used to drive the robots. 
+Here $v$ and $\omega$ (the Greek letter omega) are inputs used to drive the robot. They have the following interpretation.
+
+* $v$ is the linear velocity, which controls how fast the robot moves forward or backward
+* $\omega$ is the angular velocity, which controls how fast the robot turns.
 
 Also, $\sin$ and $\cos$ are trigonometric functions, which can be called using `numpy` as follows:
 
@@ -739,9 +754,25 @@ checker.checkUnicycleDynamics(unicycleDynamics)
 
 # This is the checker
 checker.checkUnicycleDynamics(unicycleDynamics)
+@
+
+### Testing your code
+
+The cell below uses your code in a simulation. If you didn't get the question right,
+the simulation will not work properly. 
+
+<<echo=<%=text_echo or debug_echo%>, evaluate=False>>=
+unicycleSim.runGame(unicycleDynamics)
 @ 
 
-## Why we need feedback
+Congratulations, you have a robot that you can move around!
+
+# Planning and Control
+
+So far, we have discussed modeling and simulating robots. 
+
+
+## Controling the linear robot
 
 Let's try pushing a block around on a low friction surface. 
 This model is sometimes known as "Cartesian coordinate robot", a "linear robot", or a "gantry robot". 
@@ -756,7 +787,7 @@ gantryGame.manualControl()
 
 When you finish, a plot of the $X$ and $Y$ positions of the block is generated. 
 
-
+### Question
 
 <<echo=<%=code_echo%>, evaluate = <%=code_evaluate%> >>=
 

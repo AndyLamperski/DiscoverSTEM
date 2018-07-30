@@ -4,8 +4,8 @@ import pyglet
 from pyglet.window import key
 import matplotlib.pyplot as plt
 
-def basicDynamics(x,u,dt,*args):
-    return x + dt* np.array([u[0]*np.cos(x[2]),u[0]*np.sin(x[2]),u[1]]) 
+def basicDynamics(x,u):
+    return np.array([u[0]*np.cos(x[2]),u[0]*np.sin(x[2]),u[1]]) 
 
 class unicycleSim(pyglet.window.Window):
     def __init__(self,dynamics):
@@ -35,9 +35,9 @@ class unicycleSim(pyglet.window.Window):
         self.vertexMatDiff = vertexMat - np.tile(pos,(numVertices,1))
 
         
-        pos = np.array([self.width//8,(7*self.height//8)])
+        pos = np.array([self.width//8,(self.height//8)])
 
-        self.x = np.hstack([pos,np.pi])
+        self.x = np.hstack([pos,0.])
         
         # Make the target
         vertexTuple = (0,0,
@@ -59,8 +59,8 @@ class unicycleSim(pyglet.window.Window):
 
 
         
-        self.v = 0.
-        self.omega = 0.
+
+        self.u = np.zeros(2)
 
         self.omegaMax = 1.
         self.vMax = 100.
@@ -71,8 +71,7 @@ class unicycleSim(pyglet.window.Window):
         onTarget = np.linalg.norm(pos-self.target_pos,ord=np.inf) < (self.target_width-self.car_width)/2
         if onTarget:
             self.close()
-        u = np.array([self.v,self.omega])
-        self.x = self.dynamics(self.x,u,dt,self.target_pos)
+        self.x = self.x + dt * self.dynamics(self.x,self.u)
 
         
         
@@ -115,8 +114,8 @@ class unicycleSim(pyglet.window.Window):
         self.drawCar()
 
 class unicycleGame(unicycleSim):
-    def __init__(self):
-        super().__init__(basicDynamics)
+    def __init__(self,dynamics=basicDynamics):
+        super().__init__(dynamics)
 
         label_top = pyglet.text.Label('Drive the triangle to the box',
                                       font_size=16,
@@ -132,21 +131,21 @@ class unicycleGame(unicycleSim):
 
     def on_key_press(self,symbol,modifiers):
         if symbol == key.LEFT:
-            self.omega = self.omegaMax
+            self.u[1] = self.omegaMax
         elif symbol == key.RIGHT:
-            self.omega = -self.omegaMax
+            self.u[1] = -self.omegaMax
         elif symbol == key.SPACE:
-            self.v = self.vMax
+            self.u[0] = self.vMax
         elif symbol == key.ESCAPE:
             self.close()
 
     def on_key_release(self,symbol,modifiers):
         if symbol == key.LEFT:
-            self.omega = 0.
+            self.u[1] = 0.
         elif symbol == key.RIGHT:
-            self.omega = 0.
+            self.u[1] = 0.
         elif symbol == key.SPACE:
-            self.v = 0.
+            self.u[0] = 0.
 
 def closedLoopDynamics(x,u,dt,target_pos):
     err = x[:2] - target_pos
@@ -169,6 +168,10 @@ def closedLoopDynamics(x,u,dt,target_pos):
     u = np.array([v,omega])
     
     return basicDynamics(x,u,dt,target_pos)
+
+def runGame(dynamics):
+    window = unicycleGame(dynamics)
+    pyglet.app.run()
 
 if __name__ == '__main__':
     # window = unicycleGame()
