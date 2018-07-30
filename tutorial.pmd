@@ -769,14 +769,83 @@ Congratulations, you have a robot that you can move around!
 
 # Planning and Control
 
-So far, we have discussed modeling and simulating robots. 
+So far, we have discussed modeling and simulating robots. In the game above, you manually chose the linear and angular velocities of the robot to drive it toward a goal. Robots are cooler when they drive themselves.
 
 
-## Controling the linear robot
+## Trajectory planning for the unicycle
 
-Let's try pushing a block around on a low friction surface. 
-This model is sometimes known as "Cartesian coordinate robot", a "linear robot", or a "gantry robot". 
+In the  
+\begin{equation*}
+\begin{bmatrix}
+p_x \\
+p_y \\
+\theta
+\end{bmatrix}
+=
+\begin{bmatrix}
+80 \\
+60 \\
+0
+\end{bmatrix}
+\end{equation*}
+and you drove it to a goal located at coordinates $(g_x,g_y) = (560,420)$.
+
+One common method of control is known as *trajectory planning* or *open-loop control*. In trajectory planning, the robot follows a fixed sequence of inputs at each time steps. So, in effect, the trajectory of the robot is planned in advance. 
+
+### Question
+
+The dynamics are sampled at $60$ Hz. In other words, the duration of each update step is $1/60$ seconds. Choose a sequence of inputs to drive the robot as close to the goal as you can. 
+
+This is a bit hard to do, so we'll put in some code to get you most of the way there.
+Here, we will turn for five seconds and then move forward for five seconds. You can solve
+the problem by figuring out how fast we would then need to turn followed by how fast we should move forward.
+
+The best possible values can be found using trigonometry. Namely, you can find the distance and angle from the target to figure out how fast you should turn and move. 
+The command `np.arctan` (or the more general `np.arctan2`) can help. 
+
+<<echo=<%=debug_echo%>, evaluate=<%=False%> >>=
+# Modify turningSpeed and forwardSpeed
+
+phaseLength = 60 * 5
+
+turningSpeed = np.arctan((420-60)/(560-80)) / 5.
+forwardSpeed = np.linalg.norm([560-80,420 - 60]) / 5.
+
+turnSequence = np.column_stack([np.zeros(phaseLength),turningSpeed * np.ones(phaseLength)])
+forwardSequence = np.column_stack([forwardSpeed * np.ones(phaseLength), np.zeros(phaseLength)])
+
+inputSequence = np.vstack([turnSequence,forwardSequence])
+
+unicycleSim.runSequence(unicycleDynamics,inputSequence)
+@ 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# Modify turningSpeed and forwardSpeed
+
+phaseLength = 60 * 5
+
+turningSpeed = 1.
+forwardSpeed = 100.
+
+turnSequence = np.column_stack([np.zeros(phaseLength),turningSpeed * np.ones(phaseLength)])
+forwardSequence = np.column_stack([forwardSpeed * np.ones(phaseLength), np.zeros(phaseLength)])
+
+inputSequence = np.vstack([turnSequence,forwardSequence])
+
+unicycleSim.runSequence(unicycleDynamics,inputSequence)
+@ 
+
+## What goes wrong in trajectory planning and how can we fix it?
+
+Even if you calculated out the correct speed values in the question above, you would still not reach the goal exactly. The issue is that small unavoidable numerical errors in the simulation accumulate so that the predicted values do not match the calcuations exactly. In the case of real robots, even more sources of error arise. To fix the problems with trajectory planning, we use *feedback*. 
+
+When using feedback, we measure the state of the robot at each time step and we adjust the inputs to drive the robot to the desired state. This is in contrast with trajectory planning, in which we follow an input sequence that was chosen in advance. 
+
+## Controlling a linear robot
+
+We will return to the unicycle robot later, but to introduce the basics of feedback, we will study the "Cartesian coordinate robot". It is also called a "linear robot", or a "gantry robot". 
 These types of robots are commonly used in 3D printing applications.  
+For our purposes, it basically acts like a hockey puck that we push around.
 
 https://en.wikipedia.org/wiki/Cartesian_coordinate_robot
 
@@ -787,7 +856,32 @@ gantryGame.manualControl()
 
 When you finish, a plot of the $X$ and $Y$ positions of the block is generated. 
 
+## Proportional-Derivative Control
+
+It is a of a challenge to maneuver this robot manually because it slides around so much. However, it is fairly easy to control using the principles of feedback. The simplest feedback control that works well for this system is called a "Proportional-Derivative Controller"  or PD controller. 
+
+The PD controller attempts to minimize position errors, which are defined as:
+
+\begin{equation*}
+\textrm{Error} = \textrm{(Desired Position)} - \textrm{(Actual Position)} 
+\end{equation*}
+
+The PD controller is then given by:
+\begin{equation*}
+Input = k_P \times (\textrm{Error}) + k_D \times (\textrm{Rate of change of Error}) 
+\end{equation*}
+
+Here $k_P$ and $k_D$ are constant parameters that we can tune to get better performance.
+The "Proportional" term of the input is proportional to the error. The "Derivative" term is proportional to the rate of change of the error, which in calculus terms is the *derivative* of the error. 
+
+Think about why this should work, and discuss it with a buddy. 
+
 ### Question
+
+In the simulation above, you moved the robot from an initial position of $(80,240)$ to a goal located at $(560,240)$. In this question, you must choose proportial and derivative gains, $k_P$ andn $k_D$, so that the controller can automatically drive the system to the goal.
+
+Beware, not all values of $k_P$ and $k_D$ will drive the system to the goal, and some will actually make the performance very bad. 
+
 
 <<echo=<%=code_echo%>, evaluate = <%=code_evaluate%> >>=
 
@@ -877,5 +971,64 @@ kD = 0.
 
 # 
 gantryGame.pdControl(kP,kD)
+@
+
+## Question
+
+Find a feedback strategy that drives the unicycle from its start state to the final goal at position $(560,420)$.
+
+One useful fact is that if $d$ is the distance between the robot and the goal, and the $\alpha$ is the angle from the goal to the robot, then 
+\begin{equation*}
+(\textrm{Rate of change of } d) = \cos(\theta - \alpha) v
+\end{equation*}
+So, when $\cos(\theta - \alpha) < 0$, a positive linear velocity will decrease the error. 
+
+Futhermore, we will be pointing directly at the goal when $\theta -\alpha = \pi$. 
+
+Write your code as a function that takes as an input the current state and returns a numpy array with the velocity inputs.
+
+Recall that the current state will be an array of the form `[p_x,p_y,theta]` and the velocity inputs should be an array of the form `[v,omega]`.
+
+The following helper code may be useful.
+<<echo=<%=text_echo or debug_echo%>, evaluate=<%=text_evalaute or debug_evaluate%> >>=
+# This is the angle from target to the robot
+def relativeAngle(currentState,target_pos):
+    pos = currentState[:2] 
+    err = pos - target_pos
+    alpha = np.arctan2(err[1],err[0])
+    return alpha
+
+# The robot will be pointed directly toward the
+# target when angularError is zero
+def angularError(currentState,target_pos):
+    alpha = relativeAngle(currentState,targetPos)
+    theta = currentState[0]
+    angleErr = theta - alpha - np.pi
+    # This shifts the error to lie between -pi and pi
+    angleErr = ((angleErr + np.pi) % (2*np.pi)) - np.pi
+    return angleErr
+@ 
+
+
+<<echo=<%=debug_echo%>, evaluate=False >>=
+# Call your feedback strategy unicycleFeedback
+
+def unicycleFeedback(x):
+    target_pos = np.array([560,420])
+  
+    alpha =relativeAngle(x,target_pos)
+    
+    if np.cos(theta-alpha) < 0:
+        v = 100.
+    else:
+        v = 0.
+
+    omega = np.clip(-angleError(x,target_pos,-1,1)) 
+
+    
+    u = np.array([v,omega])
+    return u
+
+unicycleSim.runFeedback(unicycleDynamics,unicycleFeedback)
 @ 
 

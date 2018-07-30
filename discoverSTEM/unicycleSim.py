@@ -22,6 +22,7 @@ class unicycleSim(pyglet.window.Window):
         
         pyglet.clock.schedule_interval(self.update,1./60.)
 
+        self.event_loop = pyglet.app.EventLoop()
         self.car_width = 50
         self.car_length = 80
         vertexArray = np.array([0,-self.car_width/2,
@@ -38,6 +39,7 @@ class unicycleSim(pyglet.window.Window):
         pos = np.array([self.width//8,(self.height//8)])
 
         self.x = np.hstack([pos,0.])
+
         
         # Make the target
         vertexTuple = (0,0,
@@ -54,9 +56,8 @@ class unicycleSim(pyglet.window.Window):
 
         self.target_pos = np.array([7*self.width/8, 7* self.height/8])
 
-
+        # print(self.x,self.target_pos)
         self.target_width = 70
-
 
         
 
@@ -65,15 +66,29 @@ class unicycleSim(pyglet.window.Window):
         self.omegaMax = 1.
         self.vMax = 100.
 
-           
+
+    def doneCode(self):
+        pass
     def update(self,dt):
-        pos = self.x[:2]
-        onTarget = np.linalg.norm(pos-self.target_pos,ord=np.inf) < (self.target_width-self.car_width)/2
-        if onTarget:
+        done = self.checkDone()
+        if done:
             self.close()
+            self.event_loop.exit()
+            self.doneCode()
+            return
+        self.updateInput()
         self.x = self.x + dt * self.dynamics(self.x,self.u)
 
+    def checkDone(self):
+        pos = self.x[:2]
+        onTarget = np.linalg.norm(pos-self.target_pos,ord=np.inf) < (self.target_width-self.car_width)/2
+        if onTarget: 
+            return onTarget
+        return onTarget
+
         
+    def updateInput(self):
+        pass
         
     def rotationMatrix(self):
         theta = self.x[2]
@@ -147,7 +162,36 @@ class unicycleGame(unicycleSim):
         elif symbol == key.SPACE:
             self.u[0] = 0.
 
-def closedLoopDynamics(x,u,dt,target_pos):
+class unicycleOpenLoop(unicycleSim):
+    def __init__(self,dynamics,U):
+        super().__init__(dynamics)
+        self.U = U
+        self.stepNum = 0
+
+    def updateInput(self):
+        self.u = self.U[self.stepNum]
+        self.stepNum += 1
+
+    def checkDone(self):
+        doneCondition = self.stepNum >= len(self.U)
+        if doneCondition:
+            self.close()
+            return doneCondition
+        return doneCondition
+
+    def doneCode(self):
+        pass
+
+class unicycleClosedLoop(unicycleSim):
+    def __init__(self,dynamics,policy):
+        super().__init__(dynamics)
+
+        self.policy = policy
+    def updateInput(self):
+        self.u = self.policy(self.x)
+        
+def feedbackPolicy(x):
+    target_pos = np.array([560,420])
     err = x[:2] - target_pos
     alpha = np.arctan2(err[1],err[0])
     theta = x[2]
@@ -166,14 +210,26 @@ def closedLoopDynamics(x,u,dt,target_pos):
     # omega = 0.
     
     u = np.array([v,omega])
+    return u
+ 
     
-    return basicDynamics(x,u,dt,target_pos)
-
 def runGame(dynamics):
     window = unicycleGame(dynamics)
     pyglet.app.run()
-
-if __name__ == '__main__':
-    # window = unicycleGame()
-    window = unicycleSim(closedLoopDynamics)
+def runSequence(dynamics,U):
+    window = unicycleOpenLoop(dynamics,U)
     pyglet.app.run()
+    err = window.x[:2] - window.target_pos
+    print('Distance from Target: %g' % np.linalg.norm(err))
+
+def runFeedback(dynamics,policy):
+    window = unicycleClosedLoop(dynamics,policy)
+    pyglet.app.run()
+    
+if __name__ == '__main__':
+    runFeedback(basicDynamics,feedbackPolicy)
+    # runGame(basicDynamics)
+    # window = unicycleGame()
+    # window = 
+    # window = unicycleSim(closedLoopDynamics)
+    # pyglet.app.run()
