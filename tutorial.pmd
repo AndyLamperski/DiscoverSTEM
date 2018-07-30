@@ -1001,8 +1001,8 @@ def relativeAngle(currentState,target_pos):
 # The robot will be pointed directly toward the
 # target when angularError is zero
 def angularError(currentState,target_pos):
-    alpha = relativeAngle(currentState,targetPos)
-    theta = currentState[0]
+    alpha = relativeAngle(currentState,target_pos)
+    theta = currentState[2]
     angleErr = theta - alpha - np.pi
     # This shifts the error to lie between -pi and pi
     angleErr = ((angleErr + np.pi) % (2*np.pi)) - np.pi
@@ -1017,13 +1017,13 @@ def unicycleFeedback(x):
     target_pos = np.array([560,420])
   
     alpha =relativeAngle(x,target_pos)
-    
+    theta = x[2]
     if np.cos(theta-alpha) < 0:
         v = 100.
     else:
         v = 0.
 
-    omega = np.clip(-angleError(x,target_pos,-1,1)) 
+    omega = np.clip(-angularError(x,target_pos),-1,1) 
 
     
     u = np.array([v,omega])
