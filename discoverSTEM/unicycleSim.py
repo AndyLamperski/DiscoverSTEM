@@ -4,7 +4,7 @@ import pyglet
 from pyglet.window import key
 import matplotlib.pyplot as plt
 
-def basicDynamics(x,u,dt,target):
+def basicDynamics(x,u,dt,*args):
     return x + dt* np.array([u[0]*np.cos(x[2]),u[0]*np.sin(x[2]),u[1]]) 
 
 class unicycleSim(pyglet.window.Window):
@@ -35,7 +35,7 @@ class unicycleSim(pyglet.window.Window):
         self.vertexMatDiff = vertexMat - np.tile(pos,(numVertices,1))
 
         
-        pos = np.array([self.width//8,(1*self.height//8)])
+        pos = np.array([self.width//8,(7*self.height//8)])
 
         self.x = np.hstack([pos,np.pi])
         
@@ -153,12 +153,16 @@ def closedLoopDynamics(x,u,dt,target_pos):
     alpha = np.arctan2(err[1],err[0])
     theta = x[2]
 
+    angleError = theta - alpha - np.pi
+    # Shift it
+    angleError = ((angleError + np.pi) % (2*np.pi)) - np.pi 
+    
     if np.cos(theta-alpha) < 0:
         v = 100.
     else:
         v = 0.
 
-    omega = np.sin(theta - alpha)
+    omega = np.clip(-angleError,-1,1) 
 
     # omega = 0.
     

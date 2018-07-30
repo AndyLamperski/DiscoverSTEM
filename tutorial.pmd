@@ -654,7 +654,92 @@ plt.ylabel('Height')
 
 ## Simulating a Wheeled Robot
 
-You are now ready to build the equations to simulate a robot. A simple wheeled robot model. 
+You are now ready to build the equations to simulate a robot. A simple wheeled robot model has states given by
+\begin{equation*}
+\begin{bmatrix}
+p_x \\
+p_y \\
+\theta
+\end{bmatrix}
+=
+\begin{bmatrix}
+x-\textrm{position}\\
+y-\textrm{position} \\
+\textrm{heading direction}
+\end{bmatrix}
+\end{equation*}
+
+The corresponding rate of change for the state is given by:
+\begin{equation*}
+\begin{bmatrix}
+v \cos(\theta) \\
+v \sin(\theta) \\
+\omega
+\end{bmatrix}
+\end{equation*}
+
+Here $v$ is the *linear velocity input* and $\omega$ is the *angular velocity input*. These are variables that can be used to drive the robots. 
+
+Also, $\sin$ and $\cos$ are trigonometric functions, which can be called using `numpy` as follows:
+
+<<echo=<%=text_echo or debug_echo%>, evaluate=<%=text_evaluate or debug_evaluate%> >>=
+Time = np.linspace(0,2,100)
+#  Let's look at several values of the sine and cosine function
+x = np.sin(2*np.pi * Time)
+y = np.cos(2*np.pi * Time) 
+# And let's plot them
+plt.plot(Time,x)
+plt.xlabel(r't')
+plt.ylabel(r'$\sin(2\pi t)$')
+plt.figure()
+plt.plot(Time,y)
+plt.xlabel(r't')
+plt.ylabel(r'$\cos(2\pi t)$')
+@
+
+### Question
+
+Write a function that takes inputs of `state` and `input` and returns a numpy array for the rate of change of the unicycle robot. 
+
+* Assume that `state` is a `numpy` array with entries `[p_x,p_y,theta]`
+* Assume that `input` is a `numpy` array with enrtries `[v,omega]`.
+
+<<echo=<%=code_echo%>, evaluate=<%=code_evaluate%> >>=
+def checkUnicycleDynamics(fun):
+    trueFun = lambda x,u : np.array([u[0] * np.cos(x[2]),
+                                     u[0] * np.sin(x[2]),
+                                     u[1]])
+    X = rnd.randn(10,3)
+    U = rnd.randn(10,2)
+    
+    trueAns = [trueFun(x,u) for x,u in zip(X,U)]
+    testAns = [fun(x,u) for x,u in zip(X,U)]
+    
+    check_array_list_equality(trueAns,testAns)
+@ 
+
+<<echo=<%=debug_echo%>, evaluate=<%=debug_evaluate%> >>=
+
+# Call your function unicycleDynamics
+
+def unicycleDynamics(x,u):
+    theta = x[2]
+    v = u[0]
+    omega = u[1]
+    return np.array([v*np.cos(theta),v*np.sin(theta),omega])
+
+checker.checkUnicycleDynamics(unicycleDynamics)
+@ 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# Call your function unicycleDynamics
+# Define it here
+
+
+
+# This is the checker
+checker.checkUnicycleDynamics(unicycleDynamics)
+@ 
 
 ## Why we need feedback
 
