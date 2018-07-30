@@ -179,6 +179,6 @@ def pdControl(kP,kD):
     runWindow(window)
 
 if __name__ == '__main__':
-    window = gantryPD(damping,kP,kD)
-    # window = gantryGame(damping)
+    #window = gantryPD(damping,kP,kD)
+    window = gantryGame(damping)
     pyglet.app.run()

@@ -169,6 +169,6 @@ def closedLoopDynamics(x,u,dt,target_pos):
     return basicDynamics(x,u,dt,target_pos)
 
 if __name__ == '__main__':
-    # window = unicycleGame()
-    window = unicycleSim(closedLoopDynamics)
+    window = unicycleGame()
+    # window = unicycleSim(closedLoopDynamics)
     pyglet.app.run()
