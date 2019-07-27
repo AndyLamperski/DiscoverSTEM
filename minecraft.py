@@ -10,7 +10,10 @@ from pyglet import image
 from pyglet.gl import *
 from pyglet.graphics import TextureGroup
 from pyglet.window import key, mouse
+import pyglet
 
+import numpy as np
+import numpy.random as rnd
 
 TICKS_PER_SEC = 60
 
@@ -50,6 +53,63 @@ def cube_vertices(x, y, z, n):
         x+n,y-n,z-n, x-n,y-n,z-n, x-n,y+n,z-n, x+n,y+n,z-n,  # back
     ]
 
+numPrimes = 20
+numMeridians = 20
+
+def sphere_vertices_and_sequence(x,y,z,n):
+
+    Vertices = [] 
+    top = np.array([x,y+n,z])
+
+    Vertices.append(top)
+
+    alpha = np.pi/(numPrimes+1)
+    beta = 2*np.pi / (numMeridians)
+    for p in range(numPrimes):
+        theta = alpha * (p + 1)
+        y_val = y+n*np.cos(theta)
+        for m in range(numMeridians):
+            phi = beta * m
+            x_val = x + n* np.cos(phi) * np.sin(theta)
+            z_val = z + n * np.sin(phi) * np.sin(theta)
+
+            Vertices.append(np.array([x_val,y_val,z_val]))
+            
+            
+    bottom = np.array([x,y-n,z])
+    Vertices.append(bottom)
+
+    Vertices = np.array(Vertices)
+    nv = len(Vertices)
+    Seq = []
+    # Top triangles
+    for p in range(numMeridians-1):
+        Seq.extend([p+1,p+2,0])
+    Seq.extend([numMeridians,1,0])
+
+    # Middle Triangles
+    # (1,2,5), (2,5,6),  (2,3,6), (3,6,7),  (3,4,7), (4,7,8),  (4,1,8), (1,8,5)
+    # (5,6,9), (6,9,10), (6,7,10),(7,10,11),(7,8,11),(8,11,12),(8,5,12),(5,12,9)
+
+    for p in range(numPrimes-1):
+        offset = p * numMeridians
+        for m in range(numMeridians-1):
+            Seq.extend([offset+m+1,offset+m+2,offset+m+1+numMeridians])
+            Seq.extend([offset+m+2,offset+m+1+numMeridians,offset+m+2+numMeridians])
+        Seq.extend([offset+numMeridians,offset+1,offset+2*numMeridians])
+        Seq.extend([offset+1,offset+2*numMeridians,offset+numMeridians+1])
+
+    # 9 = 2*4+1 = (numPrimes-1) * numMeridians + 1
+    # Bottom triangles
+    # (13,9,10),(13,10,11),(13,11,12),(13,12,9)
+    offset = (numPrimes-1) * numMeridians
+    for p in range(numMeridians-1):
+        Seq.extend([nv-1, offset + p+1, offset + p+2])
+    Seq.extend([nv-1,offset+numMeridians,offset + 1])
+    return Vertices,Seq
+
+    
+sphereVertsColors = rnd.randint(0,256,size=3*(2+numPrimes*numMeridians))   
 
 def tex_coord(x, y, n=4):
     """ Return the bounding vertices of the texture square.
@@ -92,6 +152,7 @@ FACES = [
 ]
 
 
+
 def normalize(position):
     """ Accepts `position` of arbitrary precision and returns the block
     containing that position.
@@ -112,7 +173,7 @@ def normalize(position):
 
 def sectorize(position):
     """ Returns a tuple representing the sector for the given `position`.
-
+    
     Parameters
     ----------
     position : tuple of len 3
@@ -175,6 +236,8 @@ class Model(object):
 
 
         self.add_block((0,-1,0),BRICK)
+        self.ball_position = (1,-1,2)
+        #self.add_sprite((2,4,2),STONE)
         # generate the hills randomly
         # o = n - 10
         # for _ in xrange(120):
@@ -293,6 +356,7 @@ class Model(object):
                 if key in self.shown:
                     self.hide_block(key)
 
+                    
     def show_block(self, position, immediate=True):
         """ Show the block at the given `position`. This method assumes the
         block has already been added with add_block()
@@ -312,6 +376,7 @@ class Model(object):
         else:
             self._enqueue(self._show_block, position, texture)
 
+            
     def _show_block(self, position, texture):
         """ Private implementation of the `show_block()` method.
 
@@ -677,18 +742,6 @@ class Window(pyglet.window.Window):
         """
         if self.exclusive:
             pass
-            vector = self.get_sight_vector()
-            
-            block, previous = self.model.hit_test(self.position, vector)
-            if (button == mouse.RIGHT) or \
-                    ((button == mouse.LEFT) and (modifiers & key.MOD_CTRL)):
-                # ON OSX, control + left click = right click.
-                if previous:
-                    self.model.add_block(previous, self.block)
-            elif button == pyglet.window.mouse.LEFT and block:
-                texture = self.model.world[block]
-                if texture != STONE:
-                    self.model.remove_block(block)
         else:
             self.set_exclusive_mouse(True)
 
@@ -820,9 +873,22 @@ class Window(pyglet.window.Window):
         glColor3d(1, 1, 1)
         self.model.batch.draw()
         self.draw_focused_block()
+        self.draw_ball()
+        
+
+        
         self.set_2d()
         self.draw_label()
         self.draw_reticle()
+
+    def draw_ball(self):
+        x,y,z = self.model.ball_position
+        Verts,Seq = sphere_vertices_and_sequence(x,y,z,.5)
+        pyglet.graphics.draw_indexed(len(Verts),GL_TRIANGLES,
+                                     Seq,
+                                     ('v3f',Verts.flatten()),
+                                     ('c3B',sphereVertsColors))
+
 
     def draw_focused_block(self):
         """ Draw black edges around the block that is currently under the
@@ -866,7 +932,7 @@ def setup():
     glClearColor(0.5, 0.69, 1.0, 1)
     # Enable culling (not rendering) of back-facing facets -- facets that aren't
     # visible to you.
-    glEnable(GL_CULL_FACE)
+    #glEnable(GL_CULL_FACE)
     # Set the texture minification/magnification function to GL_NEAREST (nearest
     # in Manhattan distance) to the specified texture coordinates. GL_NEAREST
     # "is generally faster than GL_LINEAR, but it can produce textured images
