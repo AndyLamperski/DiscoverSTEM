@@ -65,8 +65,8 @@ def sphere_sequence():
     return Seq
 
     
-sphereVertsColors = np.zeros((2+numPrimes*numMeridians,3),dtype=int)
-sphereVertsColors[:,0] = rnd.randint(0,256,size=len(sphereVertsColors))
+sphereVertsColors = 60 * np.ones((2+numPrimes*numMeridians,3),dtype=int)
+sphereVertsColors[:,2] = rnd.randint(0,256,size=len(sphereVertsColors))
 sphereVertsColors = sphereVertsColors.flatten()
 
 class rollingSphere:
@@ -274,24 +274,34 @@ carColors = np.array([[0,0,255],#0
 class car:
     def __init__(self,position,orientation,scale,SPEED):
         self.SPEED = SPEED
-        self.position = np.array(position)
+        self.position = np.array(position).squeeze()
         self.theta = orientation
         self.scale = scale
 
         self.v = 0
         self.omega = 0
 
-        
-    def get_vertices(self): 
-        V = carVertices
-        nv = len(V)
+    def get_rotation(self):
         theta = self.theta
         R = np.array([[np.cos(theta),0,-np.sin(theta)],
                       [0,1,0],
                       [np.sin(theta),0,np.cos(theta)]])
+        return R
+
+        
+    def get_vertices(self): 
+        V = carVertices
+        nv = len(V)
+        R = self.get_rotation()
         V = V @ R.T * self.scale + np.tile(self.position,(nv,1))
         return V 
 
+
+    def position_change(self,dt):
+        theta = self.theta
+        v = self.v
+        dpos = np.array([np.cos(theta),0,np.sin(theta)])*v*dt*self.SPEED
+        return dpos
     def draw(self):
         Verts = self.get_vertices() 
         Seq = carSeq
@@ -301,12 +311,10 @@ class car:
                                  ('v3f',Verts.flatten()),
                                  ('c3B',colors))
 
-
     def update(self,dt):
-        theta = self.theta
-        v = self.v
-        self.position = self.position + np.array([[np.cos(theta),0,np.sin(theta)]])*v*dt*self.SPEED
-        self.theta = theta + dt * self.omega * self.SPEED
+        dpos = self.position_change(dt)
+        self.theta = self.theta + dt * self.omega * self.SPEED
+        self.position = self.position + dpos
     
     def on_key_press(self,symbol,modifiers):
         if symbol == key.UP:
@@ -317,7 +325,6 @@ class car:
             self.omega -= 1
         elif symbol == key.RIGHT:
             self.omega += 1
-
 
             
     def on_key_release(self,symbol,modifiers):

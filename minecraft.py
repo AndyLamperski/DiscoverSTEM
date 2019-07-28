@@ -189,8 +189,8 @@ class Model(object):
             gridVerts.append([n-.5,y_grid,z-.5])
         self.gridVerts = np.array(gridVerts)
 
-        #self.vehicle = vh.rollingSphere((n-2,-1,-n+2),.4,WALKING_SPEED)
-        self.vehicle = vh.car((0,-1,0),0,1.,WALKING_SPEED)
+        self.vehicle = vh.rollingSphere((n-2,-1,-n+2),.4,WALKING_SPEED)
+        #self.vehicle = vh.car((0,-1,0),0,1.,WALKING_SPEED)
 
         MazeVertices = [(6,-1,-6),
                         (6,-1,-5),
@@ -635,9 +635,8 @@ class Window(pyglet.window.Window):
         m = 8
         dt = min(dt, 0.2)
         for _ in xrange(m):
-            self._update(dt / m)
-            self.model.vehicle.update(dt/m)
-        
+            #self.model.vehicle.update(dt/m)
+            self._update(dt/m)
     def _update(self, dt):
         """ Private implementation of the `update()` method. This is where most
         of the motion logic lives, along with gravity and collision detection.
@@ -666,6 +665,13 @@ class Window(pyglet.window.Window):
         x, y, z = self.position
         x, y, z = self.collide((x + dx, y + dy, z + dz), PLAYER_HEIGHT)
         self.position = (x, y, z)
+
+        # Vehicle movement and collision detection
+        self.model.vehicle.update(dt)
+        x,y,z = self.model.vehicle.position
+        x,y,z = self.collide((x,y,z),1)
+        self.model.vehicle.position = np.array([x,y,z])
+        
 
     def collide(self, position, height):
         """ Checks to see if the player at the given `position` and `height`
