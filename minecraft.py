@@ -15,6 +15,8 @@ import pyglet
 import numpy as np
 import numpy.random as rnd
 
+import vehicles as vh
+
 TICKS_PER_SEC = 60
 
 # Size of sectors used to ease block loading.
@@ -52,64 +54,6 @@ def cube_vertices(x, y, z, n):
         x-n,y-n,z+n, x+n,y-n,z+n, x+n,y+n,z+n, x-n,y+n,z+n,  # front
         x+n,y-n,z-n, x-n,y-n,z-n, x-n,y+n,z-n, x+n,y+n,z-n,  # back
     ]
-
-numPrimes = 20
-numMeridians = 20
-
-def sphere_vertices_and_sequence(x,y,z,n):
-
-    Vertices = [] 
-    top = np.array([x,y+n,z])
-
-    Vertices.append(top)
-
-    alpha = np.pi/(numPrimes+1)
-    beta = 2*np.pi / (numMeridians)
-    for p in range(numPrimes):
-        theta = alpha * (p + 1)
-        y_val = y+n*np.cos(theta)
-        for m in range(numMeridians):
-            phi = beta * m
-            x_val = x + n* np.cos(phi) * np.sin(theta)
-            z_val = z + n * np.sin(phi) * np.sin(theta)
-
-            Vertices.append(np.array([x_val,y_val,z_val]))
-            
-            
-    bottom = np.array([x,y-n,z])
-    Vertices.append(bottom)
-
-    Vertices = np.array(Vertices)
-    nv = len(Vertices)
-    Seq = []
-    # Top triangles
-    for p in range(numMeridians-1):
-        Seq.extend([p+1,p+2,0])
-    Seq.extend([numMeridians,1,0])
-
-    # Middle Triangles
-    # (1,2,5), (2,5,6),  (2,3,6), (3,6,7),  (3,4,7), (4,7,8),  (4,1,8), (1,8,5)
-    # (5,6,9), (6,9,10), (6,7,10),(7,10,11),(7,8,11),(8,11,12),(8,5,12),(5,12,9)
-
-    for p in range(numPrimes-1):
-        offset = p * numMeridians
-        for m in range(numMeridians-1):
-            Seq.extend([offset+m+1,offset+m+2,offset+m+1+numMeridians])
-            Seq.extend([offset+m+2,offset+m+1+numMeridians,offset+m+2+numMeridians])
-        Seq.extend([offset+numMeridians,offset+1,offset+2*numMeridians])
-        Seq.extend([offset+1,offset+2*numMeridians,offset+numMeridians+1])
-
-    # 9 = 2*4+1 = (numPrimes-1) * numMeridians + 1
-    # Bottom triangles
-    # (13,9,10),(13,10,11),(13,11,12),(13,12,9)
-    offset = (numPrimes-1) * numMeridians
-    for p in range(numMeridians-1):
-        Seq.extend([nv-1, offset + p+1, offset + p+2])
-    Seq.extend([nv-1,offset+numMeridians,offset + 1])
-    return Vertices,Seq
-
-    
-sphereVertsColors = rnd.randint(0,256,size=3*(2+numPrimes*numMeridians))   
 
 def tex_coord(x, y, n=4):
     """ Return the bounding vertices of the texture square.
@@ -234,9 +178,54 @@ class Model(object):
                     for dy in xrange(-2, 3):
                         self.add_block((x, y + dy, z), STONE, immediate=False)
 
+        gridVerts = []
+        y_grid = -1.49
+        for x in range(-n+2,n,s):
+            gridVerts.append([x-.5,y_grid,-n-.5])
+            gridVerts.append([x-.5,y_grid,n-.5])
 
-        self.add_block((0,-1,0),BRICK)
-        self.ball_position = (1,-1,2)
+        for z in range(-n+2,n,s):
+            gridVerts.append([-n+.5,y_grid,z-.5])
+            gridVerts.append([n-.5,y_grid,z-.5])
+        self.gridVerts = np.array(gridVerts)
+
+        #self.vehicle = vh.rollingSphere((n-2,-1,-n+2),.4,WALKING_SPEED)
+        self.vehicle = vh.car((0,-1,0),0,1.,WALKING_SPEED)
+
+        MazeVertices = [(6,-1,-6),
+                        (6,-1,-5),
+                        (6,-1,-4),
+                        (6,-1,-3),
+                        (6,-1,-2),
+                        (6,-1,-1),
+                        (6,-1,0),
+                        (6,-1,1),
+                        (6,-1,2),
+                        (6,-1,3),
+                        (6,-1,4),
+                        (6,-1,5),
+                        (6,-1,6),
+                        (3,-1,-6),
+                        (2,-1,-6),
+                        (1,-1,-6),
+                        (0,-1,-6),
+                        (-1,-1,-6),
+                        (-2,-1,-6),
+                        (-3,-1,-6),
+                        (-4,-1,-6),
+                        (-5,-1,-6),
+                        (-6,-1,-6),
+                        (5,-1,-3),
+                        (4,-1,-3),
+                        (3,-1,-3),
+                        (2,-1,-3),
+                        (1,-1,-3),
+                        (0,-1,-3),
+                        (-1,-1,-3),
+                        (-2,-1,-3)]
+        for v in MazeVertices:
+            self.add_block(v,BRICK)
+        
         #self.add_sprite((2,4,2),STONE)
         # generate the hills randomly
         # o = n - 10
@@ -501,7 +490,7 @@ class Model(object):
 
 class Window(pyglet.window.Window):
 
-    def __init__(self,position=(0,0,0),rotation=(0,-90),flying=False, *args, **kwargs):
+    def __init__(self,position=(0,0,0),rotation=(180,-90),flying=False, *args, **kwargs):
         super(Window, self).__init__(*args, **kwargs)
 
         # Whether or not the window exclusively captures the mouse.
@@ -647,7 +636,8 @@ class Window(pyglet.window.Window):
         dt = min(dt, 0.2)
         for _ in xrange(m):
             self._update(dt / m)
-
+            self.model.vehicle.update(dt/m)
+        
     def _update(self, dt):
         """ Private implementation of the `update()` method. This is where most
         of the motion logic lives, along with gravity and collision detection.
@@ -791,9 +781,12 @@ class Window(pyglet.window.Window):
             self.set_exclusive_mouse(False)
         elif symbol == key.TAB:
             self.flying = not self.flying
+        
         elif symbol in self.num_keys:
             index = (symbol - self.num_keys[0]) % len(self.inventory)
             self.block = self.inventory[index]
+
+        self.model.vehicle.on_key_press(symbol,modifiers)
 
     def on_key_release(self, symbol, modifiers):
         """ Called when the player releases a key. See pyglet docs for key
@@ -816,6 +809,9 @@ class Window(pyglet.window.Window):
         elif symbol == key.D:
             self.strafe[1] -= 1
 
+        self.model.vehicle.on_key_release(symbol,modifiers)
+
+            
     def on_resize(self, width, height):
         """ Called when the window is resized to a new `width` and `height`.
 
@@ -871,23 +867,25 @@ class Window(pyglet.window.Window):
         self.clear()
         self.set_3d()
         glColor3d(1, 1, 1)
+        
         self.model.batch.draw()
-        self.draw_focused_block()
-        self.draw_ball()
-        
 
-        
+        glColor3d(0,0,0)
+        glLineWidth(3)
+        gridVerts =self.model.gridVerts
+        gridLines = pyglet.graphics.vertex_list(len(gridVerts),
+                                                ('v3f',gridVerts.flatten()))
+        gridLines.draw(GL_LINES)
+        #self.draw_focused_block()
+
+        glColor3d(1, 1, 1)
+        # The Sprite
+        # self.draw_ball()
+        self.model.vehicle.draw()
+                
         self.set_2d()
         self.draw_label()
         self.draw_reticle()
-
-    def draw_ball(self):
-        x,y,z = self.model.ball_position
-        Verts,Seq = sphere_vertices_and_sequence(x,y,z,.5)
-        pyglet.graphics.draw_indexed(len(Verts),GL_TRIANGLES,
-                                     Seq,
-                                     ('v3f',Verts.flatten()),
-                                     ('c3B',sphereVertsColors))
 
 
     def draw_focused_block(self):
@@ -944,7 +942,8 @@ def setup():
 
 
 def main():
-    window = Window(position=(0,13,0),flying=True, height=600, caption='Pyglet', resizable=True)
+    window = Window(position=(0,14,0),flying=True,
+                    height=800,width=800, caption='Pyglet', resizable=True)
     # Hide the mouse cursor and prevent the mouse from leaving the window.
     window.set_exclusive_mouse(True)
     setup()
