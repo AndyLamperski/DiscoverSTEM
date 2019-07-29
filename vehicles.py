@@ -70,7 +70,7 @@ sphereVertsColors[:,2] = rnd.randint(0,256,size=len(sphereVertsColors))
 sphereVertsColors = sphereVertsColors.flatten()
 
 class rollingSphere:
-    def __init__(self,position,radius,SPEED):
+    def __init__(self,position,radius,SPEED,controller=None):
         self.R = np.eye(3)
         self.position = np.array(position)
         self.vertexColors = sphereVertsColors
@@ -80,7 +80,11 @@ class rollingSphere:
         # Just using a normalized velocity
         self.velocity = np.zeros(3)
         self.SPEED = SPEED
-        
+        if controller is None:
+            self.controller = lambda : np.zeros(3)
+        else:
+            self.controller = controller
+
 
     def get_vertices(self):
         x,y,z = self.position
@@ -140,30 +144,30 @@ carMidY = 0.075
 carTopY = .15
 cw = .08
 cl = .08
-carVertices = np.array([[cw*4.,carBotY,-4*cl],
-                        [cw*4,carBotY,-2*cl],
-                        [cw*4,carBotY,-1*cl],
-                        [cw*4,carBotY,1*cl],
-                        [cw*4,carBotY,2*cl],
-                        [cw*4,carBotY,4*cl],
-                        [cw*2,carBotY,5.5*cl],
-                        [cw*-2,carBotY,5.5*cl],
-                        [cw*-4,carBotY,4*cl],
-                        [cw*-4,carBotY,2*cl],
-                        [cw*-4,carBotY,1*cl],
-                        [cw*-4,carBotY,-1*cl],
-                        [cw*-4,carBotY,-2*cl],
-                        [cw*-4,carBotY,-4*cl],
-                        [cw*4.,carMidY,-4*cl],
-                        [cw*4,carMidY,-2*cl],
-                        [cw*3.,carTopY,-1*cl],
-                        [cw*3.,carTopY,1*cl],
-                        [cw*4,carMidY,2*cl],
-                        [cw*4,carMidY,4*cl],
-                        [cw*2,carMidY,5.*cl],
-                        [cw*-2,carMidY,5.*cl],
-                        [cw*-4,carMidY,4*cl],
-                        [cw*-4,carMidY,2*cl],
+carVertices = np.array([[cw*4.,carBotY,-4*cl],#0
+                        [cw*4,carBotY,-2*cl],#1
+                        [cw*4,carBotY,-1*cl],#2
+                        [cw*4,carBotY,1*cl],#3
+                        [cw*4,carBotY,2*cl],#4
+                        [cw*4,carBotY,4*cl],#5
+                        [cw*2,carBotY,5.5*cl],#6
+                        [cw*-2,carBotY,5.5*cl],#7
+                        [cw*-4,carBotY,4*cl],#8
+                        [cw*-4,carBotY,2*cl],#9
+                        [cw*-4,carBotY,1*cl],#10
+                        [cw*-4,carBotY,-1*cl],#11
+                        [cw*-4,carBotY,-2*cl],#12
+                        [cw*-4,carBotY,-4*cl],#13
+                        [cw*4.,carMidY,-4*cl],#14
+                        [cw*4,carMidY,-2*cl],#15
+                        [cw*3.,carTopY,-1*cl],#16
+                        [cw*3.,carTopY,1*cl],#17
+                        [cw*4,carMidY,2*cl],#18
+                        [cw*4,carMidY,4*cl],#19
+                        [cw*2,carMidY,5.*cl],#20
+                        [cw*-2,carMidY,5.*cl],#21
+                        [cw*-4,carMidY,4*cl],#22
+                        [cw*-4,carMidY,2*cl],#23
                         [cw*-3.,carTopY,1*cl],
                         [cw*-3.,carTopY,-1*cl],
                         [cw*-4,carMidY,-2*cl],
@@ -257,12 +261,12 @@ carColors = np.array([[0,0,255],#0
                       [35,45,155],#15
                       [155,100,70],#16
                       [155,100,70],#17
-                      [35,45,155],#18
-                      [35,45,155],#19
+                      [235,45,55],#18
+                      [235,45,55],#19
                       [70,50,155],#20
                       [70,50,155],#21
-                      [35,45,155],#22
-                      [35,45,155],#23
+                      [235,45,55],#22
+                      [235,45,55],#23
                       [155,100,70],#24
                       [155,100,70],#25
                       [35,45,155],#26
@@ -272,7 +276,7 @@ carColors = np.array([[0,0,255],#0
                       [0,0,0],#30
                       [0,0,0]]).flatten()                      
 class car:
-    def __init__(self,position,orientation,scale,SPEED):
+    def __init__(self,position,orientation,scale,SPEED,controller=None):
         self.SPEED = SPEED
         self.position = np.array(position).squeeze()
         self.theta = orientation
@@ -280,6 +284,10 @@ class car:
 
         self.v = 0
         self.omega = 0
+        if controller is None:
+            self.controller = lambda : np.zeros(2)
+        else:
+            self.controller = controller
 
     def get_rotation(self):
         theta = self.theta

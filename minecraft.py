@@ -23,6 +23,7 @@ TICKS_PER_SEC = 60
 SECTOR_SIZE = 16
 
 WALKING_SPEED = 5
+VEHICLE_SPEED = 3
 FLYING_SPEED = 15
 
 GRAVITY = 20.0
@@ -134,7 +135,7 @@ def sectorize(position):
 
 class Model(object):
 
-    def __init__(self):
+    def __init__(self,vehicle,environment = 'MAZE'):
 
         # A Batch is a collection of vertex lists for batched rendering.
         self.batch = pyglet.graphics.Batch()
@@ -159,9 +160,14 @@ class Model(object):
         # _show_block() and _hide_block() calls
         self.queue = deque()
 
-        self._initialize()
+        self.vehicle = vehicle
+        if environment == 'MAZE':
+            self._initialize_maze()
+        else:
+            self._initialize_small()
 
-    def _initialize(self):
+
+    def _initialize_maze(self):
         """ Initialize the world by placing all the blocks.
 
         """
@@ -188,10 +194,7 @@ class Model(object):
             gridVerts.append([-n+.5,y_grid,z-.5])
             gridVerts.append([n-.5,y_grid,z-.5])
         self.gridVerts = np.array(gridVerts)
-
-        self.vehicle = vh.rollingSphere((n-2,-1,-n+2),.4,WALKING_SPEED)
-        #self.vehicle = vh.car((0,-1,0),0,1.,WALKING_SPEED)
-
+ 
         MazeVertices = [(6,-1,-6),
                         (6,-1,-5),
                         (6,-1,-4),
@@ -225,27 +228,35 @@ class Model(object):
                         (-2,-1,-3)]
         for v in MazeVertices:
             self.add_block(v,BRICK)
-        
-        #self.add_sprite((2,4,2),STONE)
-        # generate the hills randomly
-        # o = n - 10
-        # for _ in xrange(120):
-        #     a = random.randint(-o, o)  # x position of the hill
-        #     b = random.randint(-o, o)  # z position of the hill
-        #     c = -1  # base of the hill
-        #     h = random.randint(1, 6)  # height of the hill
-        #     s = random.randint(4, 8)  # 2 * s is the side length of the hill
-        #     d = 1  # how quickly to taper off the hills
-        #     t = random.choice([GRASS, SAND, BRICK])
-        #     for y in xrange(c, c + h):
-        #         for x in xrange(a - s, a + s + 1):
-        #             for z in xrange(b - s, b + s + 1):
-        #                 if (x - a) ** 2 + (z - b) ** 2 > (s + 1) ** 2:
-        #                     continue
-        #                 if (x - 0) ** 2 + (z - 0) ** 2 < 5 ** 2:
-        #                     continue
-        #                 self.add_block((x, y, z), t, immediate=False)
-        #         s -= d  # decrement side lenth so hills taper off
+
+    def _initialize_small(self):
+        """ Initialize the world by placing all the blocks.
+
+        """
+        n = 3  # 1/2 width and height of world
+        s = 1  # step size
+        y = 0  # initial y height
+        for x in xrange(-n, n + 1, s):
+            for z in xrange(-n, n + 1, s):
+                # create a layer stone an grass everywhere.
+                self.add_block((x, y - 2, z), GRASS, immediate=False)
+                self.add_block((x, y - 3, z), STONE, immediate=False)
+                if x in (-n, n) or z in (-n, n):
+                    # create outer walls.
+                    for dy in xrange(-2, 3):
+                        self.add_block((x, y + dy, z), STONE, immediate=False)
+
+        gridVerts = []
+        y_grid = -1.49
+        for x in range(-n+2,n,s):
+            gridVerts.append([x-.5,y_grid,-n-.5])
+            gridVerts.append([x-.5,y_grid,n-.5])
+
+        for z in range(-n+2,n,s):
+            gridVerts.append([-n+.5,y_grid,z-.5])
+            gridVerts.append([n-.5,y_grid,z-.5])
+        self.gridVerts = np.array(gridVerts)
+ 
 
     def hit_test(self, position, vector, max_distance=8):
         """ Line of sight search from current position. If a block is
@@ -490,9 +501,21 @@ class Model(object):
 
 class Window(pyglet.window.Window):
 
-    def __init__(self,position=(0,0,0),rotation=(180,-90),flying=False, *args, **kwargs):
-        super(Window, self).__init__(*args, **kwargs)
+    def __init__(self,position=(0,0,0),rotation=(180,-90),flying=False,
+                 vehicle = vh.rollingSphere((0,-1,0),.4,VEHICLE_SPEED),
+                 environment = 'MAZE',
+                 *args, **kwargs):
 
+        # The label that is displayed in the top left of the canvas.
+        self.label = pyglet.text.Label('', font_name='Arial', font_size=18,
+            x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
+            color=(0, 0, 0, 255))
+
+        # The crosshairs at the center of the screen.
+        self.reticle = None
+
+
+        super(Window, self).__init__(*args, **kwargs)
         # Whether or not the window exclusively captures the mouse.
         self.exclusive = False
 
@@ -522,9 +545,7 @@ class Window(pyglet.window.Window):
         # Which sector the player is currently in.
         self.sector = None
 
-        # The crosshairs at the center of the screen.
-        self.reticle = None
-
+        
         # Velocity in the y (upward) direction.
         self.dy = 0
 
@@ -540,17 +561,14 @@ class Window(pyglet.window.Window):
             key._6, key._7, key._8, key._9, key._0]
 
         # Instance of the model that handles the world.
-        self.model = Model()
+        self.model = Model(vehicle,environment)
 
-        # The label that is displayed in the top left of the canvas.
-        self.label = pyglet.text.Label('', font_name='Arial', font_size=18,
-            x=10, y=self.height - 10, anchor_x='left', anchor_y='top',
-            color=(0, 0, 0, 255))
-
+                
         # This call schedules the `update()` method to be called
         # TICKS_PER_SEC. This is the main game event loop.
         pyglet.clock.schedule_interval(self.update, 1.0 / TICKS_PER_SEC)
 
+           
     def set_exclusive_mouse(self, exclusive):
         """ If `exclusive` is True, the game will capture the mouse, if False
         the game will ignore the mouse.
@@ -784,7 +802,10 @@ class Window(pyglet.window.Window):
             if self.dy == 0:
                 self.dy = JUMP_SPEED
         elif symbol == key.ESCAPE:
-            self.set_exclusive_mouse(False)
+            if self.exclusive:
+                self.set_exclusive_mouse(False)
+            else:
+                self.close()
         elif symbol == key.TAB:
             self.flying = not self.flying
         
@@ -891,7 +912,7 @@ class Window(pyglet.window.Window):
                 
         self.set_2d()
         self.draw_label()
-        self.draw_reticle()
+        #self.draw_reticle()
 
 
     def draw_focused_block(self):
@@ -946,15 +967,62 @@ def setup():
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
     #setup_fog()
 
+def carInteractive():
+    vehicle = vh.car((0,-1,0),0,1.,VEHICLE_SPEED)
+    window = Window(position=(0,14,0),flying=True,vehicle=vehicle,
+                    height=800,width=800, caption='Pyglet',
+                    resizable=True)
+    # Hide the mouse cursor and prevent the mouse from leaving the window.
+    window.set_exclusive_mouse(False)
+    setup()
+    pyglet.app.run()
+
+def ballInteractive():
+    main()
+
+def ballSmall(controller = None):
+    window = Window(position=(0,3,0),flying=True,environment='SMALL',
+                    height=800,width=800, caption='Pyglet',
+                    resizable=True)
+
+    # Hide the mouse cursor and prevent the mouse from leaving the window.
+    window.set_exclusive_mouse(False)
+    setup()
+    pyglet.app.run()
+
+
+def carSmall():
+    vehicle = vh.car((0,-1,0),0,1.,VEHICLE_SPEED)
+    window = Window(position=(0,3,0),flying=True,
+                    vehicle = vehicle,
+                    environment='SMALL',
+                    height=800,width=800, caption='Pyglet',
+                    resizable=True)
+
+    # Hide the mouse cursor and prevent the mouse from leaving the window.
+    window.set_exclusive_mouse(False)
+    setup()
+    pyglet.app.run()
+
 
 def main():
     window = Window(position=(0,14,0),flying=True,
                     height=800,width=800, caption='Pyglet', resizable=True)
     # Hide the mouse cursor and prevent the mouse from leaving the window.
-    window.set_exclusive_mouse(True)
+    window.set_exclusive_mouse(False)
     setup()
     pyglet.app.run()
 
-
+import sys
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) == 1:
+        main()
+    elif sys.argv[1] == 'ci':
+        carInteractive()
+    elif sys.argv[1] == 'bs':
+        ballSmall()
+    elif sys.argv[1] == 'cs':
+        carSmall()
+
+    else:
+        main()
