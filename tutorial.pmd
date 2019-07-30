@@ -1,0 +1,1041 @@
+# Oh hey. 
+
+Welcome to the Discover STEM session on Programming for Robot Control.
+
+
+<<switches, echo=False, evaluate=True>>=
+text_echo = text_mode and not debug_mode
+text_evaluate = False
+code_echo = not text_mode
+code_evaluate = False
+debug_echo = debug_mode
+debug_evaluate = debug_mode
+@ 
+
+
+
+# Introduction to Python
+
+## Jupyter Notebooks
+
+If you're reading this, you are looking at a "Jupyter notebook". Jupyter notebooks allow you to easily mix text, 
+$\sqrt{math}$, and code:
+
+<< echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+complex_calculation = 1 + 1
+print('The result of this calculation is: ', complex_calculation)
+@ 
+
+The block above is known as a "code cell". There are a few ways to run a code cell. 
+* Click the "Run" button at the top of the page.
+* Click the "Run" button to the left of the cell. (Older versions of Jupyter notebooks might not have these buttons.)
+* Press `Shift-Enter` on the keyboard.
+
+Read the code in the cell above, and think about what you think it will do. Then run the cell and see what *really* happens. 
+
+The cell below loads the code that we will use in the tutorial. Run this cell. 
+
+<<echo=<%=text_echo%>,evaluate = <%=text_evaluate%> >>=
+# Definitely do run this cell.
+import discoverSTEM.checker as checker
+import discoverSTEM.gantryGame as gantryGame
+import discoverSTEM.unicycleSim as unicycleSim
+import matplotlib.pyplot as plt
+%matplotlib inline
+print('We are ready to roll.')
+@
+
+Did you run the cell?
+
+
+<<echo=<%=debug_echo%>, evaluate = <%=debug_evaluate%> >>=
+import discoverSTEM.checker as checker
+import discoverSTEM.gantryGame as gantryGame
+import discoverSTEM.gantryGame as gantryGame
+import discoverSTEM.unicycleSim as unicycleSim
+import discoverSTEM.utils as ut
+import numpy as np
+
+from importlib import reload
+reload(checker)
+reload(ut)
+reload(gantryGame)
+reload(unicycleSim)
+
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+@ 
+
+## What is Python?
+
+Python is a sweet programming language. We will use it for the tutorial.
+
+The first program you'll see in any programming language is "Hello, World!". All it does is print "Hello, World!" to the screen. 
+
+https://en.wikipedia.org/wiki/%22Hello,_World!%22_program
+
+Here is how "Hello, World!" works in Python. Run the cell below.
+
+<<echo = <%=text_echo%>, evaluate = <%=text_evaluate%> >>=
+print('Oh hey.')
+@ 
+
+That can't be right. It was supposed to print "Hello, World!". We got something else. 
+Fix the code above to get a real "Hello, World!" program. 
+
+Now we will explore some of the basics of Python.
+
+### Comments
+
+As with most languages, Python allows you to make comments. 
+Comments are pieces of text that you can put in your code to make it easier to read. 
+However, they don't do anything when you run the code. Try to guess what the code below will do. 
+
+<<echo = <%=text_echo%>, evaluate = <%=text_evaluate%> >>=
+# This is a comment.
+
+# Let's calculate the force on a particle accelerated by gravity
+mass = 10. 
+acceleration = -9.8 
+force = mass * acceleration 
+
+print('May the',force,'be with you')
+@ 
+
+Run the cell to see if your guess was correct. 
+
+### Variables
+
+The the code cell above, `mass`, `acceleration`, and `force` are all variables. Variables can be used to keep track of data 
+during computations. It is always good practice to make variable names which are easy to understand. Consider, instead, the following code, which does the same thing.
+
+<<echo =<%=text_echo%>, evaluate = <%=text_evaluate%> >>=
+# This is a comment.
+
+# Let's calculate the force on a particle accelerated by gravity
+asdofdoadkfla = 10.0
+asdgasddoaijgda = -9.8
+aslgpasdlkg = asdofdoadkfla * asdgasddoaijgda
+
+print('May the',aslgpasdlkg,'be with you')
+@ 
+
+Even with the comments, it is not all that obvious what the variables are supposed to mean.
+
+### Question
+
+Make a variable called `the_answer`, which holds the answer to [life, the universe and everything](https://en.wikipedia.org/wiki/42_(number)).  
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# Make your variable here
+
+
+
+# Don't modify the code below here
+# This is what checks your work.
+checker.check_the_answer(the_answer)
+@
+
+<<echo = <%=debug_echo%>, evaluate = <%=debug_evaluate%> >>=
+# Make your variable here
+
+the_answer = 42
+checker.check_the_answer(the_answer)
+@
+
+<<echo = <%=code_echo%>, evaluate = <%=code_evaluate%>>>=
+def check_the_answer(ans):
+    if isinstance(ans,int):
+        if ans == 42:
+            print('Yes.')
+            return
+    print('No. You may wish to contemplate this for a few million more years.')
+    return
+        
+        
+@ 
+
+### Lists and Loops
+
+Computers are great at doing the same thing over and over and over and over and over again. 
+One of the main tricks to get repetitive behavior in a program is called a "for loop". 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# This is a list.
+margotList = ['Margot','is', 'a', 'dog','and','I','love','her']
+
+for word in margotList:
+    print(word)
+@ 
+
+This is Margot. 
+<img src="figures/margot.JPG" alt="Margot" width="300px"/>
+
+Each entry in `margotList` is a piece of text known as a "string". 
+In the next example, we will use a for loop to extract the shortest strings 
+from `margotList`. In particular, the result should be a list containing `a`
+and `I`.
+
+The code also introduces some useful tricks such as `if`, `elif`, `len`, and `append`.
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%>>>=
+# We initialize the list
+shortest_strings = [margotList[0]]
+# Here margotList[0] is the first entry of the list.
+
+for word in margotList:
+    # Throughout the loop
+    # shorest_strings will be a list containing
+    # the shorest strings that we have encountered
+    # In particular, all entries of shortest_strings
+    # will have the same length
+    if len(word) < len(shortest_strings[0]):
+        # here len(word) is the length of word.
+        #
+        # In this case, we found a string that is
+        # shorter than anything we've seen.
+        # so we restart the list 
+        # now only containing this new word
+        shortest_strings = [word]
+    elif len(word) == len(shortest_strings[0]):
+        # elif is short for "else if"
+        # 
+        # in this case, we found another word
+        # that has the exact same length
+        # as our other shortest strings.
+        # So we add it to the list using append
+        shortest_strings.append(word)
+        
+print(shortest_strings)
+@ 
+
+
+
+### Functions
+
+
+
+<< echo=<%=text_echo%>, evaluate = <%=text_evaluate%> >>=
+# This is a simple function
+def squared(x):
+    return x**2
+
+print(1,'squared is',squared(1))
+print(2,'squared is',squared(2))
+print(the_answer,'squared is',squared(the_answer))
+@ 
+
+### Question 
+
+
+Write a function called `cubed` that takes a number, $x$, as input and returns its cube, $x^3$.
+
+<<echo=<%=text_echo%>, evaluate = <%=text_evaluate%> >>=
+# Write your code here. 
+
+
+# Don't modify the line below. It is used to test your code.
+checker.check_cubed(cubed)
+@ 
+
+<<echo=<%=debug_mode%>, evaluate = True>>=
+cubed = lambda x : x**3
+checker.check_cubed(cubed)
+@ 
+
+<<echo=<%=code_echo%>,evaluate = <%=code_evaluate%> >>=
+# This is the main checker code 
+import numpy as np
+import numpy.random as rnd
+import scipy.linalg as la
+import scipy.signal as sp
+
+import discoverSTEM.gantryGame as gantryGame
+import matplotlib.pyplot as plt
+import scipy.signal as sp
+import discoverSTEM.utils as ut
+
+
+
+def feedback(result):
+   if result:
+      print("oh yeah.")
+   else:
+      print("nope")
+   return result
+
+
+def check_array_equality(X,X_test,tol=1e-3,ord=2,final=True):
+   err = la.norm(X-X_test,ord=ord)
+
+   passed = err < tol
+   if final:
+       feedback(passed)
+   return passed
+      
+def check_array_list_equality(X,X_test,tol=1e-3,ord=2):
+    for x,x_test in zip(X,X_test):
+        passed = check_array_equality(x,x_test,
+                                      tol=tol,ord=ord,final=False)
+        if not passed:
+            feedback(passed)
+            return passed
+    feedback(passed)
+    return passed
+
+def check_cubed(fun):
+   X = rnd.randn(10)
+   Y = X**3
+   Y_test = np.array([fun(x) for x in X])
+   check_array_equality(Y,Y_test)
+@
+
+Later in the tutorial, we will need functions that take multiple variables as inputs. This is done by just separating the inputs by commas:
+
+<<echo=<%=text_echo%>, evaluate = <%=text_evaluate%>>>=
+def add_three_numbers(x,y,z):
+    the_sum = x + y + z
+    return the_sum
+
+print('I added some numbers:',add_three_numbers(1,2,the_answer))
+@ 
+
+# Dynamic Modeling
+Things that move or change over time are called *dynamic systems*. Here are some dynamic systems
+* Robots
+* Gas prices
+* The wolf population
+
+In order to study the behavior of dynamic systems, we need some way of
+describing how things change from one instant of time to the
+next. We'll need some math in order to do that. 
+
+## Simulation Warm-up Questions
+
+The next few questions will step through the basics of simulation.
+
+### Question
+A few days ago, I left my house at 4 AM and walked 25 miles per hour. 
+How far did I walk by midnight?
+
+<<echo=<%=code_echo%>, evaluate=<%=code_evaluate%> >>=
+def check_distance(miles):
+    milesTrue = 25 * 20
+    if np.abs(miles-milesTrue) < 1e-3:
+        print('Yes. And I would walk 500 more.')
+    else:
+        print('No. Check your calculations again.')
+@ 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# Put your answer in a variable called distance.
+# distance should be in miles. 
+
+
+
+# Again, don't change this line. This is the checker
+checker.check_distance(distance)
+@ 
+
+<<echo=<%=debug_echo%>, evaluate=<%=debug_evaluate%> >>=
+# Put your answer in a variable called distance.
+# You can make other variables to help with the calculation.
+
+distance = 500
+
+# Again, don't change this line. This is the checker
+checker.check_distance(distance)
+@
+
+### Question
+
+The next day, I started walking at midnight and I walked for 10 hours. This day however, I didn't walk the same speed the whole time. Instead, I had a different speed every hour. Make a list  called `cumulative_distance` that shows the total distance I travelled at each hour. The list should start at 0 and have a total of 11 entries.  
+
+Hint: Use a for loop. Also, it might help to make a new variable that 
+keeps track of how far I walked so far. 
+<<echo=<%=code_echo%>, evaluate=True>>=
+speeds = [40, 30, 30, 25, 25, 35, 30, 20, 10, 5]
+def checkCD(ans):
+    true_ans = np.hstack([0,np.cumsum(speeds)])
+    check_array_equality(np.array(ans),true_ans)
+    plt.plot(ans)
+@ 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# These are my walking speeds.
+speeds = <%=speeds%>
+
+# So, the first few entries of the list should be
+# 0, <%=speeds[0]%>, <%=speeds[0]+speeds[1]%>, . . . 
+
+
+
+checker.checkCD(cumulative_distance)
+@
+
+<<echo=<%=debug_mode%>, evaluate=<%=debug_mode%>>>=
+speeds = <%=speeds%>
+
+cur_distance = 0
+cumulative_distance = [cur_distance]
+for s in speeds:
+    cur_distance = s + cur_distance
+    cumulative_distance.append(cur_distance)
+    
+checker.checkCD(cumulative_distance)
+@ 
+
+### Question
+
+I took a rest for a few hours, and then starting at noon, I walked for 10 more hours. This time, however, I changed my speed every minute. 
+
+<<echo=<%=code_echo%>, evaluate = <%=code_evaluate%> >>=
+numSteps = 60 * 10
+dt = 1./60.
+Time = np.linspace(0,10-dt,numSteps)
+minuteTimes = Time
+minuteSpeeds = np.exp(-.5 * minuteTimes)*(1 + np.sin( 2*np.pi*Time))
+minuteSpeeds = 250 * minuteSpeeds / (dt * np.sum(minuteSpeeds))
+
+def checkMD(ans):
+    trueAns = np.hstack([0,dt * np.cumsum(minuteSpeeds)])
+    check_array_equality(ans,trueAns)
+    plt.plot(dt * np.arange(numSteps+1),ans)
+@ 
+
+<<echo=<%=text_echo or debug_echo%>, evaluate=<%=debug_evaluate%> >>=
+# Run this cell to see how fast I walked.
+minuteTimes = checker.minuteTimes
+minuteSpeeds = checker.minuteSpeeds
+plt.plot(minuteTimes,minuteSpeeds)
+@
+
+Now make a list called `minute_distance` that contains the cumulative distance that I walked at each minute. 
+As before, your list should start from zero, leading to a total of <%=60*10 + 1%> entries. 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# Make your list here
+# You will need to use the list minuteSpeeds.
+# As long as you have run the previous cell
+# minuteSpeeds should be available
+
+
+
+checker.checkMD(minute_distance)
+@ 
+
+<<echo=<%=debug_echo%>, evaluate=<%=debug_evaluate%> >>=
+
+dt = 1./60.
+
+cur_distance = 0.
+minute_distance = [cur_distance]
+
+for s in minuteSpeeds:
+    cur_distance = cur_distance + dt * s
+    minute_distance.append(cur_distance)
+    
+checker.checkMD(minute_distance)
+@ 
+
+Congratulations, you have made a simulation.
+
+## General Principles of Simulation
+
+In the questions above, you calculated my walking distance
+by using formulas that resemble:
+\begin{equation*}
+(\textrm{New Distance}) = (\textrm{Current Distance}) 
++ (\textrm{Speed}) \times (\textrm{Duration})
+\end{equation*}
+
+The same basic idea can be used to simulate any dynamic system, from robots to wolf populations. In this more general context, we call the variables that change over time the **state**. Then the **state update equation** that we use for simulation becomes.
+\begin{equation*}
+(\textrm{New State}) = (\textrm{Current State}) 
++ (\textrm{Rate of Change}) \times (\textrm{Duration})
+\end{equation*}
+
+In the walking example, the state was the distance travelled. In general, however, the state will be a collection of variables. For example, if you threw a ball in the air and wanted to describe how it moves, the state would be: 
+\begin{equation*}
+\textrm{State} = \begin{bmatrix}
+\textrm{Position} \\
+\textrm{Velocity}
+\end{bmatrix}
+\end{equation*}
+
+
+Approximating the behavior of a dynamic system using state update equation is known as the *Euler method*. 
+It was described by mathematician Leonhard Euler in 1768. 
+Even before computers and simulations, this method for approximating dynamics was important since the behavior of most dynamic systems cannot be computed exactly.  
+
+
+https://en.wikipedia.org/wiki/Euler_method
+
+## More Python: `numpy`
+
+We would like a convenient method for evaluating the state update
+equation when the state has many variables. In particular, we would
+like to evaluate the operations of $+$ and $\times$ on many variables
+at once. The most popular Python tool for calculating with many
+variables is called `numpy`. 
+
+Here are some examples of how to use `numpy`. 
+
+<<echo=<%=text_echo%>, evaluate =<%=text_evaluate%> >>=
+# We need to first load it using import
+import numpy as np
+
+# We can store multiple numbers in arrays
+x = np.array([1,2,3])
+y = np.array([4,5,6])
+
+print('x:',x)
+print('y:',y)
+
+# We can add two arrays
+z = x + y
+print('x+y:',z)
+
+# We can multiply an array by a number
+w = 2 * x
+print('2*x:', w)
+
+# We can access individual entries using indices:
+print('the first and second entry of x:',x[0],x[1])
+# Note that indices start at 0. 
+@ 
+
+When we did $x+y$, each entry of $x$ was added to a corresponding entry of $y$. When we did $2*x$, each entry of $x$ was multiplied by $2$. 
+
+### Question
+
+Write a function called `stateUpdate` which evaluates the state update equation. It should
+take three inputs, in this order:
+* `current_state`
+* `rate_of_change`
+* `duration`
+and return `next_state`.
+
+You can assume that `current_state` and  `rate_of_change` are `numpy` arrays, so that adding arrays and multiplying by numbers behave as we saw. 
+
+<<echo = <%=code_echo%>, evaluate =<%=code_evalute%> >>=
+def checkStateUpdate(fun):
+    N = rnd.randint(1,10,10)
+    X = [rnd.randn(n) for n in N]
+    F = [rnd.randn(n) for n in N]
+    H = rnd.randn(len(N))
+    
+    trueFun = lambda x,f,h : x + h * f
+    trueAns = [trueFun(x,f,h) for x,f,h in zip(X,F,H)]
+    testAns = [fun(x,f,h) for x,f,h in zip(X,F,H)]
+    
+    check_array_list_equality(trueAns,testAns)
+@ 
+
+<<echo=<%=debug_echo%>, evaluate=<%=debug_evaluate%> >>=
+# Write your function here
+
+def stateUpdate(current_state,rate_of_change,duration):
+    return current_state + rate_of_change * duration
+
+# This is the checker
+checker.checkStateUpdate(stateUpdate)
+@ 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# Write your function here
+
+
+
+# This is the checker
+checker.checkStateUpdate(stateUpdate)
+@ 
+
+## Simulating Physical Systems
+
+The most important formula is Newton's second law:
+
+\begin{equation*}
+\textrm{Force} = \textrm{Mass} \times \textrm{Acceleration}
+\end{equation*}
+
+Seriously. This is the most important formula. Period. 
+
+Let's think about throwing a ball into the air. Ignoring the effects of wind, the only force on the ball is due to gravity, in this case the force in the vertical direction is:
+\begin{equation*}
+\textrm{Force} = -\textrm{Mass} \times g 
+\end{equation*}
+where $g$ is the gravitational constant, which has the value $g = 9.8 m / s^2$. 
+
+Comparing this with Newton's second law, we see that the mass terms cancel, and we get
+\begin{equation*}
+Acceleration = -g
+\end{equation*}
+
+How does this help us simulate the flight of the ball? For this we use the following relationships:
+* **velocity** is the rate of change of **position**
+* **acceleration** is the rate of change of **velocity**
+
+### Question
+
+Assume that the ball system is given by 
+\begin{equation*}
+\textrm{State} = \begin{bmatrix}
+\textrm{Position} \\
+\textrm{Velocity}
+\end{bmatrix}
+\end{equation*}
+and assume that $g = 9.8$. 
+Write a function that takes an input `current_state`, which is a `numpy` array, and returns another `numpy` array that holds the rate of change of the state. 
+
+<<echo=<%=code_echo%>, evaluate=<%=code_evaluate%> >>=
+def checkBallDynamics(fun):
+    trueFun = lambda x : np.array([x[1],-9.8])
+    X = rnd.randn(10,2)
+    F_true = [trueFun(x) for x in X]
+    F_test = [fun(x) for x in X]
+    
+    check_array_list_equality(F_true,F_test)
+@ 
+
+ 
+<<echo=<%=debug_echo%>, evaluate=<%=debug_evaluate%> >>=
+# Call your function ballDynamics
+
+def ballDynamics(x):
+    v = x[1]
+    g = 9.8
+    return np.array([v,-g])
+
+# This is the checker
+checker.checkBallDynamics(ballDynamics)
+@
+
+<<echo = <%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# Call your function ballDynamics
+
+
+# This is the checker
+checker.checkBallDynamics(ballDynamics)
+@ 
+
+The ball in flight is one of the few dynamic systems whose behavior can be computed exactly. The code below computes the exact solutions and then compares the result with approximate solution computed via simulation. The simulation uses the functions that you have written. 
+
+The simulation approximates the state values for `NumSteps` values over the time interval $[0,2]$. So, the larger the value of `NumSteps`, the finer we are breaking up the interval. As `NumSteps` gets larger, the simulation becomes more accurate. (Think about why?) Try out the code for a few different values of `NumSteps` to see what happens. 
+
+<<echo=<%=text_echo or debug_echo%>, evaluate=<%=text_evaluate or debug_evaluate%> >>=
+# Number of steps we will simulate
+NumSteps = 100
+
+# Starts on the ground and is thrown up with velocity of 10 m/s
+initial_state = np.array([0,10.])
+
+Time = np.linspace(0,2,NumSteps)
+
+g = 9.8
+
+def analyticSolution(initial_state,Time):
+    # For this problem
+    p0,v0 = initial_state
+    Velocity = v0 - g * Time
+    Position = p0 + v0 * Time - .5 * g * Time**2
+    return np.column_stack([Position,Velocity])
+
+# For the simulation we make a copy of the initial 
+# state, which we will update.
+cur_state = np.copy(initial_state)
+States_sim = np.zeros((NumSteps,2))
+
+States_sim[0] = cur_state
+
+for t in range(NumSteps-1):
+    duration = Time[t+1] - Time[t]
+    rate = ballDynamics(cur_state)
+    cur_state = stateUpdate(cur_state,rate,duration)
+    States_sim[t+1] = cur_state
+
+
+States_Exact = analyticSolution(initial_state,Time)
+plt.plot(Time,States_Exact[:,0])
+plt.plot(Time,States_sim[:,0])
+plt.legend(('Exact','Simulated'))
+plt.xlabel('Time')
+plt.ylabel('Height')
+@ 
+
+## Simulating a Wheeled Robot
+
+You are now ready to build the equations to simulate a robot. A simple wheeled robot model has states given by
+\begin{equation*}
+\begin{bmatrix}
+p_x \\
+p_y \\
+\theta
+\end{bmatrix}
+=
+\begin{bmatrix}
+x-\textrm{position}\\
+y-\textrm{position} \\
+\textrm{heading direction}
+\end{bmatrix}
+\end{equation*}
+This model is often called the *unicycle*. Recall that $\theta$ is the Greek letter $\theta$.
+
+The corresponding rate of change for the state is given by:
+\begin{equation*}
+\begin{bmatrix}
+v \cos(\theta) \\
+v \sin(\theta) \\
+\omega
+\end{bmatrix}
+\end{equation*}
+
+Here $v$ and $\omega$ (the Greek letter omega) are inputs used to drive the robot. They have the following interpretation.
+
+* $v$ is the linear velocity, which controls how fast the robot moves forward or backward
+* $\omega$ is the angular velocity, which controls how fast the robot turns.
+
+Also, $\sin$ and $\cos$ are trigonometric functions, which can be called using `numpy` as follows:
+
+<<echo=<%=text_echo or debug_echo%>, evaluate=<%=text_evaluate or debug_evaluate%> >>=
+Time = np.linspace(0,2,100)
+#  Let's look at several values of the sine and cosine function
+x = np.sin(2*np.pi * Time)
+y = np.cos(2*np.pi * Time) 
+# And let's plot them
+plt.plot(Time,x)
+plt.xlabel(r't')
+plt.ylabel(r'$\sin(2\pi t)$')
+plt.figure()
+plt.plot(Time,y)
+plt.xlabel(r't')
+plt.ylabel(r'$\cos(2\pi t)$')
+@
+
+### Question
+
+Write a function that takes inputs of `state` and `input` and returns a numpy array for the rate of change of the unicycle robot. 
+
+* Assume that `state` is a `numpy` array with entries `[p_x,p_y,theta]`
+* Assume that `input` is a `numpy` array with enrtries `[v,omega]`.
+
+<<echo=<%=code_echo%>, evaluate=<%=code_evaluate%> >>=
+def checkUnicycleDynamics(fun):
+    trueFun = lambda x,u : np.array([u[0] * np.cos(x[2]),
+                                     u[0] * np.sin(x[2]),
+                                     u[1]])
+    X = rnd.randn(10,3)
+    U = rnd.randn(10,2)
+    
+    trueAns = [trueFun(x,u) for x,u in zip(X,U)]
+    testAns = [fun(x,u) for x,u in zip(X,U)]
+    
+    check_array_list_equality(trueAns,testAns)
+@ 
+
+<<echo=<%=debug_echo%>, evaluate=<%=debug_evaluate%> >>=
+
+# Call your function unicycleDynamics
+
+def unicycleDynamics(x,u):
+    theta = x[2]
+    v = u[0]
+    omega = u[1]
+    return np.array([v*np.cos(theta),v*np.sin(theta),omega])
+
+checker.checkUnicycleDynamics(unicycleDynamics)
+@ 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# Call your function unicycleDynamics
+# Define it here
+
+
+
+# This is the checker
+checker.checkUnicycleDynamics(unicycleDynamics)
+@
+
+### Testing your code
+
+The cell below uses your code in a simulation. If you didn't get the question right,
+the simulation will not work properly. 
+
+<<echo=<%=text_echo or debug_echo%>, evaluate=False>>=
+unicycleSim.runGame(unicycleDynamics)
+@ 
+
+Congratulations, you have a robot that you can move around!
+
+# Planning and Control
+
+So far, we have discussed modeling and simulating robots. In the game above, you manually chose the linear and angular velocities of the robot to drive it toward a goal. Robots are cooler when they drive themselves.
+
+
+## Trajectory planning for the unicycle
+
+In the  
+\begin{equation*}
+\begin{bmatrix}
+p_x \\
+p_y \\
+\theta
+\end{bmatrix}
+=
+\begin{bmatrix}
+80 \\
+60 \\
+0
+\end{bmatrix}
+\end{equation*}
+and you drove it to a goal located at coordinates $(g_x,g_y) = (560,420)$.
+
+One common method of control is known as *trajectory planning* or *open-loop control*. In trajectory planning, the robot follows a fixed sequence of inputs at each time steps. So, in effect, the trajectory of the robot is planned in advance. 
+
+### Question
+
+The dynamics are sampled at $60$ Hz. In other words, the duration of each update step is $1/60$ seconds. Choose a sequence of inputs to drive the robot as close to the goal as you can. 
+
+This is a bit hard to do, so we'll put in some code to get you most of the way there.
+Here, we will turn for five seconds and then move forward for five seconds. You can solve
+the problem by figuring out how fast we would then need to turn followed by how fast we should move forward.
+
+The best possible values can be found using trigonometry. Namely, you can find the distance and angle from the target to figure out how fast you should turn and move. 
+The command `np.arctan` (or the more general `np.arctan2`) can help. 
+
+<<echo=<%=debug_echo%>, evaluate=<%=False%> >>=
+# Modify turningSpeed and forwardSpeed
+
+phaseLength = 60 * 5
+
+turningSpeed = np.arctan((420-60)/(560-80)) / 5.
+forwardSpeed = np.linalg.norm([560-80,420 - 60]) / 5.
+
+turnSequence = np.column_stack([np.zeros(phaseLength),turningSpeed * np.ones(phaseLength)])
+forwardSequence = np.column_stack([forwardSpeed * np.ones(phaseLength), np.zeros(phaseLength)])
+
+inputSequence = np.vstack([turnSequence,forwardSequence])
+
+unicycleSim.runSequence(unicycleDynamics,inputSequence)
+@ 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%> >>=
+# Modify turningSpeed and forwardSpeed
+
+phaseLength = 60 * 5
+
+turningSpeed = 1.
+forwardSpeed = 100.
+
+turnSequence = np.column_stack([np.zeros(phaseLength),turningSpeed * np.ones(phaseLength)])
+forwardSequence = np.column_stack([forwardSpeed * np.ones(phaseLength), np.zeros(phaseLength)])
+
+inputSequence = np.vstack([turnSequence,forwardSequence])
+
+unicycleSim.runSequence(unicycleDynamics,inputSequence)
+@ 
+
+## What goes wrong in trajectory planning and how can we fix it?
+
+Even if you calculated out the correct speed values in the question above, you would still not reach the goal exactly. The issue is that small unavoidable numerical errors in the simulation accumulate so that the predicted values do not match the calcuations exactly. In the case of real robots, even more sources of error arise. To fix the problems with trajectory planning, we use *feedback*. 
+
+When using feedback, we measure the state of the robot at each time step and we adjust the inputs to drive the robot to the desired state. This is in contrast with trajectory planning, in which we follow an input sequence that was chosen in advance. 
+
+## Controlling a linear robot
+
+We will return to the unicycle robot later, but to introduce the basics of feedback, we will study the "Cartesian coordinate robot". It is also called a "linear robot", or a "gantry robot". 
+These types of robots are commonly used in 3D printing applications.  
+For our purposes, it basically acts like a hockey puck that we push around.
+
+https://en.wikipedia.org/wiki/Cartesian_coordinate_robot
+
+<<echo=<%=debug_echo or text_echo%>, evaluate=False>>=
+
+gantryGame.manualControl()
+@ 
+
+When you finish, a plot of the $X$ and $Y$ positions of the block is generated. 
+
+## Proportional-Derivative Control
+
+It is a of a challenge to maneuver this robot manually because it slides around so much. However, it is fairly easy to control using the principles of feedback. The simplest feedback control that works well for this system is called a "Proportional-Derivative Controller"  or PD controller. 
+
+The PD controller attempts to minimize position errors, which are defined as:
+
+\begin{equation*}
+\textrm{Error} = \textrm{(Desired Position)} - \textrm{(Actual Position)} 
+\end{equation*}
+
+The PD controller is then given by:
+\begin{equation*}
+Input = k_P \times (\textrm{Error}) + k_D \times (\textrm{Rate of change of Error}) 
+\end{equation*}
+
+Here $k_P$ and $k_D$ are constant parameters that we can tune to get better performance.
+The "Proportional" term of the input is proportional to the error. The "Derivative" term is proportional to the rate of change of the error, which in calculus terms is the *derivative* of the error. 
+
+Think about why this should work, and discuss it with a buddy. 
+
+### Question
+
+In the simulation above, you moved the robot from an initial position of $(80,240)$ to a goal located at $(560,240)$. In this question, you must choose proportial and derivative gains, $k_P$ andn $k_D$, so that the controller can automatically drive the system to the goal.
+
+Beware, not all values of $k_P$ and $k_D$ will drive the system to the goal, and some will actually make the performance very bad. 
+
+
+<<echo=<%=code_echo%>, evaluate = <%=code_evaluate%> >>=
+
+c = gantryGame.damping
+P = ([1.],[1.,c,0])
+
+def unstableRoots(p,tol=1e-8):
+   return np.array([r for r in np.roots(p) if np.real(r) >= -tol])
+
+def testClassicalControl(P,C):
+   C_min = ut.minreal(C)
+   P_min = ut.minreal(P)
+   
+   CL = ut.classicFeedback(P_min,C_min)
+   CL = ut.minreal(CL) 
+   
+
+   # Stability Tests
+   nP,dP = P_min
+   nC,dC = C_min
+   
+   # First check for  pole-zero cancellations
+   nL = np.polymul(nP,nC)
+   dL = np.polymul(dP,dC)
+  
+   L_unstable = unstableRoots(dL)
+   L_min = ut.minreal((nL,dL)) 
+   L_min_unstable = unstableRoots(L_min[1]) 
+   
+   if len(L_unstable) > len(L_min_unstable):
+      print('Unstable Pole-Zero Cancellation.\nYour system will be sensitive input disturbances.\n')
+      return feedback(False)
+   
+   # Now check if the closed-loop system is untable.
+   CL_ZPK = sp.tf2zpk(*CL)
+   if len(unstableRoots(CL_ZPK[1])) > 0:
+      print('Unstable Closed-Loop System\n')
+      return feedback(False)
+   
+   # If all the checks passed, proceed
+   print('You have stabilized the system.\nWe will test its performance\n') 
+   Time = np.linspace(0,5,500)
+   
+   for p,e in zip(gantryGame.pos,gantryGame.error):
+      U = e * np.ones_like(Time)
+      Time,SR,_ = sp.lsim(CL,U,Time)
+      plt.plot(Time,SR+p)
+ 
+   plt.legend(['X','Y'],loc='best')
+   plt.xlabel('Time')
+   plt.ylabel('Position')
+   return feedback(True)
+
+def testPID(kP,kI,kD):
+   C = ([kD,kP,kI],[1.,0.])
+   return testClassicalControl(P,C)
+
+def testPD(kP,kD):
+   return testPID(kP,0.,kD)
+@
+
+<<echo = <%=text_echo%>, evaluate = <%=text_evaluate%> >>=
+# Change these gain values to stabilize your system
+kP = 0.
+kD = 0.
+
+checker.testPD(kP,kD)
+
+@ 
+
+<<echo = <%=debug_echo%>, evaluate = <%=debug_evaluate%>>>=
+
+kP = 1.
+kD = 10.
+
+checker.testPD(kP,kD)
+@ 
+
+Play around with the various values of $k_P$ and $k_D$ to see how the performance of the simulation changes. The behavior here will be slightly different from the behavior of the earlier test. This is because the graphic simulation models disturbances on the system, while the test does not. These disturbances capture the effects such as wind and surface imperfections. 
+
+<<echo=<%=debug_echo or text_echo%>,evaluate = False >>=
+# See what happens when you change the values of kP and kD
+# You can set the values in the space here.
+
+kP = 0.
+kD = 0.
+
+# 
+gantryGame.pdControl(kP,kD)
+@
+
+## Question
+
+Find a feedback strategy that drives the unicycle from its start state to the final goal at position $(560,420)$.
+
+One useful fact is that if $d$ is the distance between the robot and the goal, and the $\alpha$ is the angle from the goal to the robot, then 
+\begin{equation*}
+(\textrm{Rate of change of } d) = \cos(\theta - \alpha) v
+\end{equation*}
+So, when $\cos(\theta - \alpha) < 0$, a positive linear velocity will decrease the error. 
+
+Futhermore, we will be pointing directly at the goal when $\theta -\alpha = \pi$. 
+
+Write your code as a function that takes as an input the current state and returns a numpy array with the velocity inputs.
+
+Recall that the current state will be an array of the form `[p_x,p_y,theta]` and the velocity inputs should be an array of the form `[v,omega]`.
+
+The following helper code may be useful.
+<<echo=<%=text_echo or debug_echo%>, evaluate=<%=text_evalaute or debug_evaluate%> >>=
+# This is the angle from target to the robot
+def relativeAngle(currentState,target_pos):
+    pos = currentState[:2] 
+    err = pos - target_pos
+    alpha = np.arctan2(err[1],err[0])
+    return alpha
+
+# The robot will be pointed directly toward the
+# target when angularError is zero
+def angularError(currentState,target_pos):
+    alpha = relativeAngle(currentState,target_pos)
+    theta = currentState[2]
+    angleErr = theta - alpha - np.pi
+    # This shifts the error to lie between -pi and pi
+    angleErr = ((angleErr + np.pi) % (2*np.pi)) - np.pi
+    return angleErr
+@ 
+
+<<echo=<%=text_echo%>, evaluate=<%=text_evaluate%>>>=
+# Call your funtion unicycleFeedback
+
+
+# We will test it in a simulation
+unicycleSim.runFeedback(unicycleDynamics,unicycleFeedback)
+@ 
+
+<<echo=<%=debug_echo%>, evaluate=False >>=
+# Call your feedback strategy unicycleFeedback
+
+def unicycleFeedback(x):
+    target_pos = np.array([560,420])
+  
+    alpha =relativeAngle(x,target_pos)
+    theta = x[2]
+    if np.cos(theta-alpha) < 0:
+        v = 100.
+    else:
+        v = 0.
+
+    omega = np.clip(-angularError(x,target_pos),-1,1) 
+
+    
+    u = np.array([v,omega])
+    return u
+
+unicycleSim.runFeedback(unicycleDynamics,unicycleFeedback)
+@ 
+

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+
+virtualenv -p python3 dsenv
+. ./dsenv/bin/activate
+pip install git+https://github.com/AndyLamperski/Pweave.git
+pip install .
+make
+jupyter notebook
