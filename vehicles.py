@@ -80,11 +80,20 @@ class rollingSphere:
         # Just using a normalized velocity
         self.velocity = np.zeros(3)
         self.SPEED = SPEED
+        self.MAXSPEED = 2 # Really the ratio to the max speed
         if controller is None:
-            self.controller = lambda : np.zeros(3)
-        else:
-            self.controller = controller
+            class nullController:
+                def __init__(self):
+                    pass
+                def update(self,pos,vel):
+                    pass
+                def value(self):
+                    return np.zeros(2)
+            controller = nullController()
+        self.controller = controller
 
+        self.Time = [0.]
+        self.Traj = [np.array([position[0],position[2]])]
 
     def get_vertices(self):
         x,y,z = self.position
@@ -102,6 +111,17 @@ class rollingSphere:
         return M@self.velocity*self.SPEED /self.radius
 
     def update(self,dt):
+        x,y,z = self.position
+        vx,vy,vz = self.velocity
+        # Just controlling 2d, in more normal coordinates
+        self.controller.update(np.array([-x,z]),np.array([-vx,vz]))
+        dx,dz = self.controller.value()
+        #print(dx,dy,dz)
+        dy = 0.
+        self.velocity += dt * np.array([-dx,dy,dz])
+        s = la.norm(self.velocity)
+        if s > self.MAXSPEED:
+            self.velocity = self.MAXSPEED * self.velocity / s
         self.position = self.position + dt * self.velocity * self.SPEED
 
         omega = self.get_angular_velocity()
@@ -109,6 +129,8 @@ class rollingSphere:
 
         self.R = la.expm(Omega * dt) @ self.R 
 
+        self.Time.append(self.Time[-1]+dt)
+        self.Traj.append(np.array([-self.position[0],self.position[2]]))
     def draw(self):
         Verts = self.get_vertices()
         Seq = self.Seq

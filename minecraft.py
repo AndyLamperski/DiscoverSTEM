@@ -16,6 +16,7 @@ import numpy as np
 import numpy.random as rnd
 
 import vehicles as vh
+import matplotlib.pyplot as plt
 
 TICKS_PER_SEC = 60
 
@@ -132,10 +133,72 @@ def sectorize(position):
     x, y, z = x // SECTOR_SIZE, y // SECTOR_SIZE, z // SECTOR_SIZE
     return (x, 0, z)
 
+class layout:
+    def __init__(self,n,MazeVertices):
+        self.n = n
+        self.MazeVertices = MazeVertices
+
+    def plot(self):
+        gridVerts = []
+        n = self.n
+        fig,ax = plt.subplots(figsize=(n*2,n*2))
+        for x in range(-n+1,n+1):
+            ax.plot([x-.5,x-.5],[-n+.5,n-.5],'k')
+
+            ax.plot([-n+.5,n-.5],[x-.5,x-.5],'k')
+
+        for x in range(-n+1,n):
+            for z in range(-n+1,n):
+                if (-x,-1,z) not in self.MazeVertices:
+                    plt.text(x,z,'(%d,%d)' % (x,z),fontsize=14,
+                             verticalalignment='center',
+                             horizontalalignment='center')
+                else:
+                    plt.plot(x,z,'s',markersize=30,color='k')
+
+                    
+        ax.set_aspect('equal')
+        ax.set_xticks([])
+        ax.set_yticks([])
+MazeVertices = [(6,-1,-6),
+                (6,-1,-5),
+                (6,-1,-4),
+                (6,-1,-3),
+                (6,-1,-2),
+                (6,-1,-1),
+                (6,-1,0),
+                (6,-1,1),
+                (6,-1,2),
+                (6,-1,3),
+                (6,-1,4),
+                (6,-1,5),
+                (6,-1,6),
+                (3,-1,-6),
+                (2,-1,-6),
+                (1,-1,-6),
+                (0,-1,-6),
+                (-1,-1,-6),
+                (-2,-1,-6),
+                (-3,-1,-6),
+                (-4,-1,-6),
+                (-5,-1,-6),
+                (-6,-1,-6),
+                (5,-1,-3),
+                (4,-1,-3),
+                (3,-1,-3),
+                (2,-1,-3),
+                (1,-1,-3),
+                (0,-1,-3),
+                (-1,-1,-3),
+                (-2,-1,-3)]
+       
+
+smallLayout = layout(3,[])
+mazeLayout = layout(9,MazeVertices)
 
 class Model(object):
 
-    def __init__(self,vehicle,environment = 'MAZE'):
+    def __init__(self,vehicle,layout):
 
         # A Batch is a collection of vertex lists for batched rendering.
         self.batch = pyglet.graphics.Batch()
@@ -161,17 +224,19 @@ class Model(object):
         self.queue = deque()
 
         self.vehicle = vehicle
-        if environment == 'MAZE':
-            self._initialize_maze()
-        else:
-            self._initialize_small()
+        # if environment == 'MAZE':
+        #     self._initialize_maze()
+        # else:
+        #     self._initialize_small()
 
+        self.layout = layout
+        self.initialize_layout()
 
-    def _initialize_maze(self):
+    def initialize_layout(self):
         """ Initialize the world by placing all the blocks.
 
         """
-        n = 10  # 1/2 width and height of world
+        n = self.layout.n  # 1/2 width and height of world
         s = 1  # step size
         y = 0  # initial y height
         for x in xrange(-n, n + 1, s):
@@ -194,69 +259,12 @@ class Model(object):
             gridVerts.append([-n+.5,y_grid,z-.5])
             gridVerts.append([n-.5,y_grid,z-.5])
         self.gridVerts = np.array(gridVerts)
- 
-        MazeVertices = [(6,-1,-6),
-                        (6,-1,-5),
-                        (6,-1,-4),
-                        (6,-1,-3),
-                        (6,-1,-2),
-                        (6,-1,-1),
-                        (6,-1,0),
-                        (6,-1,1),
-                        (6,-1,2),
-                        (6,-1,3),
-                        (6,-1,4),
-                        (6,-1,5),
-                        (6,-1,6),
-                        (3,-1,-6),
-                        (2,-1,-6),
-                        (1,-1,-6),
-                        (0,-1,-6),
-                        (-1,-1,-6),
-                        (-2,-1,-6),
-                        (-3,-1,-6),
-                        (-4,-1,-6),
-                        (-5,-1,-6),
-                        (-6,-1,-6),
-                        (5,-1,-3),
-                        (4,-1,-3),
-                        (3,-1,-3),
-                        (2,-1,-3),
-                        (1,-1,-3),
-                        (0,-1,-3),
-                        (-1,-1,-3),
-                        (-2,-1,-3)]
+
+        MazeVertices = self.layout.MazeVertices
         for v in MazeVertices:
             self.add_block(v,BRICK)
 
-    def _initialize_small(self):
-        """ Initialize the world by placing all the blocks.
 
-        """
-        n = 3  # 1/2 width and height of world
-        s = 1  # step size
-        y = 0  # initial y height
-        for x in xrange(-n, n + 1, s):
-            for z in xrange(-n, n + 1, s):
-                # create a layer stone an grass everywhere.
-                self.add_block((x, y - 2, z), GRASS, immediate=False)
-                self.add_block((x, y - 3, z), STONE, immediate=False)
-                if x in (-n, n) or z in (-n, n):
-                    # create outer walls.
-                    for dy in xrange(-2, 3):
-                        self.add_block((x, y + dy, z), STONE, immediate=False)
-
-        gridVerts = []
-        y_grid = -1.49
-        for x in range(-n+2,n,s):
-            gridVerts.append([x-.5,y_grid,-n-.5])
-            gridVerts.append([x-.5,y_grid,n-.5])
-
-        for z in range(-n+2,n,s):
-            gridVerts.append([-n+.5,y_grid,z-.5])
-            gridVerts.append([n-.5,y_grid,z-.5])
-        self.gridVerts = np.array(gridVerts)
- 
 
     def hit_test(self, position, vector, max_distance=8):
         """ Line of sight search from current position. If a block is
@@ -501,9 +509,8 @@ class Model(object):
 
 class Window(pyglet.window.Window):
 
-    def __init__(self,position=(0,0,0),rotation=(180,-90),flying=False,
-                 vehicle = vh.rollingSphere((0,-1,0),.4,VEHICLE_SPEED),
-                 environment = 'MAZE',
+    def __init__(self,vehicle=None,position=(0,0,0),rotation=(180,-90),flying=False,
+                 layout = mazeLayout,
                  *args, **kwargs):
 
         # The label that is displayed in the top left of the canvas.
@@ -561,7 +568,7 @@ class Window(pyglet.window.Window):
             key._6, key._7, key._8, key._9, key._0]
 
         # Instance of the model that handles the world.
-        self.model = Model(vehicle,environment)
+        self.model = Model(vehicle,layout)
 
                 
         # This call schedules the `update()` method to be called
@@ -896,7 +903,7 @@ class Window(pyglet.window.Window):
         glColor3d(1, 1, 1)
         
         self.model.batch.draw()
-
+        
         glColor3d(0,0,0)
         glLineWidth(3)
         gridVerts =self.model.gridVerts
@@ -977,11 +984,23 @@ def carInteractive():
     setup()
     pyglet.app.run()
 
-def ballInteractive():
-    main()
+def ballMaze(controller=None):
+    vehicle = vh.rollingSphere((8,-1,-7),.4,VEHICLE_SPEED,controller=controller)
+    window = Window(position=(0,14,0),flying=True,vehicle=vehicle,
+                    height=800,width=800, caption='Pyglet',
+                    resizable=True)
+    # Hide the mouse cursor and prevent the mouse from leaving the window.
+    window.set_exclusive_mouse(False)
+    setup()
+    pyglet.app.run()
 
-def ballSmall(controller = None):
-    window = Window(position=(0,3,0),flying=True,environment='SMALL',
+
+def ballSmall(controller=None):
+    vehicle = vh.rollingSphere((0,-1,0),.4,VEHICLE_SPEED,controller=controller)
+    #print(vehicle.velocity)
+    #print(vehicle.controller(0,0,0))
+    window = Window(position=(0,3,0),flying=True,layout=smallLayout,
+                    vehicle=vehicle,
                     height=800,width=800, caption='Pyglet',
                     resizable=True)
 
@@ -989,13 +1008,16 @@ def ballSmall(controller = None):
     window.set_exclusive_mouse(False)
     setup()
     pyglet.app.run()
+    Traj = np.array(vehicle.Traj)
+    Time = np.array(vehicle.Time)
+    plt.plot(Time,Traj)
 
 
-def carSmall():
+def carSmall(controller=None):
     vehicle = vh.car((0,-1,0),0,1.,VEHICLE_SPEED)
-    window = Window(position=(0,3,0),flying=True,
+    window = Window(position=(0,3,0),flying=True, 
+                    layout=smallLayout,
                     vehicle = vehicle,
-                    environment='SMALL',
                     height=800,width=800, caption='Pyglet',
                     resizable=True)
 
@@ -1003,7 +1025,6 @@ def carSmall():
     window.set_exclusive_mouse(False)
     setup()
     pyglet.app.run()
-
 
 def main():
     window = Window(position=(0,14,0),flying=True,
@@ -1017,6 +1038,8 @@ import sys
 if __name__ == '__main__':
     if len(sys.argv) == 1:
         main()
+    elif sys.argv[1] == 'bm':
+        ballMaze()
     elif sys.argv[1] == 'ci':
         carInteractive()
     elif sys.argv[1] == 'bs':
