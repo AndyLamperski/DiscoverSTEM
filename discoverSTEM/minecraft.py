@@ -15,7 +15,7 @@ import pyglet
 import numpy as np
 import numpy.random as rnd
 
-import vehicles as vh
+import discoverSTEM.vehicles as vh
 import matplotlib.pyplot as plt
 
 TICKS_PER_SEC = 60
