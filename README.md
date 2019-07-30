@@ -16,7 +16,7 @@ cd DiscoverSTEM
 ```
 
 * Press `Enter`
-* Click on `tutorial_notebook.ipynb`
+* Click on `tutorial.ipynb`
 
 # If you need to restart
 
@@ -25,11 +25,10 @@ If something weird should happen, you may need to restart the tutorial.
 * Paste the commands into the terminal
 
 ```
-. dsenv/bin/activate
 jupyter notebook
 ```
 
 * Press `Enter`
-* Click on `tutorial_notebook.ipynb`
+* Click on `tutorial.ipynb`
 
  
