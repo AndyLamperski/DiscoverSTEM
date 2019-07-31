@@ -85,7 +85,7 @@ class rollingSphere:
             class nullController:
                 def __init__(self):
                     pass
-                def update(self,pos,vel):
+                def update(self,measurement):
                     pass
                 def value(self):
                     return np.zeros(2)
@@ -114,14 +114,15 @@ class rollingSphere:
         x,y,z = self.position
         vx,vy,vz = self.velocity
         # Just controlling 2d, in more normal coordinates
-        self.controller.update(np.array([-x,z]),np.array([-vx,vz]))
+        measurement = (np.array([-x,z]),np.array([-vx,vz]))
+        self.controller.update(measurement)
         dx,dz = self.controller.value()
         #print(dx,dy,dz)
         dy = 0.
         self.velocity += dt * np.array([-dx,dy,dz])
         s = la.norm(self.velocity)
-        if s > self.MAXSPEED:
-            self.velocity = self.MAXSPEED * self.velocity / s
+        #if s > self.MAXSPEED:
+        #    self.velocity = self.MAXSPEED * self.velocity / s
         self.position = self.position + dt * self.velocity * self.SPEED
 
         omega = self.get_angular_velocity()
@@ -305,12 +306,23 @@ class car:
         self.scale = scale
 
         self.v = 0
-        self.omega = 0
+        self.omega = 0.
         if controller is None:
-            self.controller = lambda : np.zeros(2)
+            class nullController:
+                def __init__(self):
+                    pass
+                def update(self,measurement):
+                    pass
+                def value(self):
+                    return np.zeros(2)
+            self.controller = nullController()
         else:
             self.controller = controller
 
+        self.Time = [0.]
+        self.ThetaTraj = [np.pi-orientation]
+        self.XTraj = [-self.position[0]]
+        self.YTraj = [self.position[2]]
     def get_rotation(self):
         theta = self.theta
         R = np.array([[np.cos(theta),0,-np.sin(theta)],
@@ -342,9 +354,30 @@ class car:
                                  ('c3B',colors))
 
     def update(self,dt):
-        dpos = self.position_change(dt)
+        #dpos = self.position_change(dt)
+        theta = self.theta
+        v = self.v
+        
+        theta = self.theta
+        x,_,y = self.position
+        omega = self.omega
+        measurement = (-x,y,np.pi-theta,v,-omega)
+        self.controller.update(measurement)
+        dv,domega = self.controller.value()
+
+
+        self.v += dv
+        self.omega -= domega
+        v = self.v
+        
+        dpos = np.array([np.cos(theta),0,np.sin(theta)])*v*dt*self.SPEED
+ 
         self.theta = self.theta + dt * self.omega * self.SPEED
         self.position = self.position + dpos
+        self.Time.append(self.Time[-1]+dt)
+        self.ThetaTraj.append(np.pi-self.theta)
+        self.XTraj.append(-self.position[0])
+        self.YTraj.append(self.position[2])
     
     def on_key_press(self,symbol,modifiers):
         if symbol == key.UP:

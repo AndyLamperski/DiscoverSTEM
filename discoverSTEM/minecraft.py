@@ -134,9 +134,10 @@ def sectorize(position):
     return (x, 0, z)
 
 class layout:
-    def __init__(self,n,MazeVertices):
+    def __init__(self,n,MazeVertices,start):
         self.n = n
         self.MazeVertices = MazeVertices
+        self.start = start
 
     def plot(self):
         gridVerts = []
@@ -149,7 +150,12 @@ class layout:
 
         for x in range(-n+1,n):
             for z in range(-n+1,n):
-                if (-x,-1,z) not in self.MazeVertices:
+                if x == 0 and z == 0:
+                    plt.plot(x,z,'y*',markersize=40)
+                elif x == self.start[0] and z == self.start[1]:
+                    plt.plot(x,z,'b+',markersize=40)
+                elif (-x,-1,z) not in self.MazeVertices:
+                    
                     plt.text(x,z,'(%d,%d)' % (x,z),fontsize=14,
                              verticalalignment='center',
                              horizontalalignment='center')
@@ -160,7 +166,19 @@ class layout:
         ax.set_aspect('equal')
         ax.set_xticks([])
         ax.set_yticks([])
-MazeVertices = [(6,-1,-6),
+MazeVertices = [(5,-1,6),
+                (4,-1,6),
+                (3,-1,6),
+                (2,-1,6),
+                (1,-1,6),
+                (0,-1,6),
+                (-1,-1,6),
+                (-2,-1,6),
+                (-3,-1,6),
+                (-4,-1,6),
+                (-5,-1,6),
+                (-6,-1,6),
+                (6,-1,-6),
                 (6,-1,-5),
                 (6,-1,-4),
                 (6,-1,-3),
@@ -187,6 +205,13 @@ MazeVertices = [(6,-1,-6),
                 (-6,-1,-4),
                 (-6,-1,-3),
                 (-6,-1,-2),
+                (-6,-1,-1),
+                (-6,-1,0),
+                (-6,-1,1),
+                (-6,-1,2),
+                (-6,-1,3),
+                (-6,-1,4),
+                (-6,-1,5),
                 (5,-1,-3),
                 (4,-1,-3),
                 (3,-1,-3),
@@ -194,11 +219,87 @@ MazeVertices = [(6,-1,-6),
                 (1,-1,-3),
                 (0,-1,-3),
                 (-1,-1,-3),
-                (-2,-1,-3)]
+                (-2,-1,-3),
+                (-3,-1,-3),
+                (-3,-1,-2),
+                (-3,-1,-1),
+                (-3,-1,0),
+                (-3,-1,1),
+                (-3,-1,2),
+                (-3,-1,3),
+                (-2,-1,3),
+                (-1,-1,3),
+                (0,-1,3),
+                (1,-1,3),
+                (2,-1,3),
+                (3,-1,3),
+                (3,-1,2),
+                (3,-1,1),
+                (3,-1,0)]
        
 
-smallLayout = layout(3,[])
-mazeLayout = layout(9,MazeVertices)
+MazeVertices = [(7,-1,-5),
+                (6,-1,-5),
+                (5,-1,-5),
+                (4,-1,-5),
+                (3,-1,-5),
+                (2,-1,-5),
+                (1,-1,-5),
+                (0,-1,-5),
+                (-1,-1,-5),
+                (-2,-1,-5),
+                (-3,-1,-5),
+                (-4,-1,-5),
+                (-5,-1,-5),
+                (-5,-1,-4),
+                (-5,-1,-3),
+                (-5,-1,-2),
+                (-5,-1,-1),
+                (-5,-1,0),
+                (-5,-1,1),
+                (-5,-1,2),
+                (-5,-1,3),
+                (-5,-1,4),
+                (-5,-1,5),
+                (-4,-1,5),
+                (-3,-1,5),
+                (-2,-1,5),
+                (-1,-1,5),
+                (0,-1,5),
+                (1,-1,5),
+                (2,-1,5),
+                (3,-1,5),
+                (4,-1,5),
+                (5,-1,5),
+                (5,-1,4),
+                (5,-1,3),
+                (5,-1,2),
+                (5,-1,1),
+                (5,-1,0),
+                (5,-1,-1),
+                (5,-1,-2),
+                (4,-1,-2),
+                (3,-1,-2),
+                (2,-1,-2),
+                (1,-1,-2),
+                (0,-1,-2),
+                (-1,-1,-2),
+                (-2,-1,-2),
+                (-2,-1,-1),
+                (-2,-1,0),
+                (-2,-1,1),
+                (-2,-1,2),
+                (-1,-1,2),
+                (0,-1,2),
+                (1,-1,2),
+                (2,-1,2),
+                (2,-1,1)
+                ]
+
+smallStart = (0,0)
+mazeStart = (-7,-7)
+smallLayout = layout(3,[],smallStart)
+mazeLayout = layout(8,MazeVertices,mazeStart)
 
 class Model(object):
 
@@ -246,8 +347,13 @@ class Model(object):
         for x in xrange(-n, n + 1, s):
             for z in xrange(-n, n + 1, s):
                 # create a layer stone an grass everywhere.
-                self.add_block((x, y - 2, z), GRASS, immediate=False)
+
+                if x == 0 and z == 0:
+                    self.add_block((x, y - 2, z), SAND, immediate=False)   
+                else:
+                    self.add_block((x, y - 2, z), GRASS, immediate=False)
                 self.add_block((x, y - 3, z), STONE, immediate=False)
+                
                 if x in (-n, n) or z in (-n, n):
                     # create outer walls.
                     for dy in xrange(-2, 3):
@@ -922,7 +1028,7 @@ class Window(pyglet.window.Window):
         self.model.vehicle.draw()
                 
         self.set_2d()
-        self.draw_label()
+        #self.draw_label()
         #self.draw_reticle()
 
 
@@ -989,7 +1095,19 @@ def carInteractive():
     pyglet.app.run()
 
 def ballMaze(controller=None):
-    vehicle = vh.rollingSphere((8,-1,-7),.4,VEHICLE_SPEED,controller=controller)
+    x,z = mazeStart
+    vehicle = vh.rollingSphere((-x,-1,z),.4,VEHICLE_SPEED,controller=controller)
+    window = Window(position=(0,14,0),flying=True,vehicle=vehicle,
+                    height=800,width=800, caption='Pyglet',
+                    resizable=True)
+    # Hide the mouse cursor and prevent the mouse from leaving the window.
+    window.set_exclusive_mouse(False)
+    setup()
+    pyglet.app.run()
+
+def carMaze(controller=None):
+    x,z = mazeStart
+    vehicle = vh.car((-x,-1,z),np.pi,1.,VEHICLE_SPEED,controller=controller)
     window = Window(position=(0,14,0),flying=True,vehicle=vehicle,
                     height=800,width=800, caption='Pyglet',
                     resizable=True)
@@ -999,6 +1117,7 @@ def ballMaze(controller=None):
     pyglet.app.run()
 
 
+    
 def ballSmall(controller=None):
     vehicle = vh.rollingSphere((0,-1,0),.4,VEHICLE_SPEED,controller=controller)
     #print(vehicle.velocity)
@@ -1015,10 +1134,12 @@ def ballSmall(controller=None):
     Traj = np.array(vehicle.Traj)
     Time = np.array(vehicle.Time)
     plt.plot(Time,Traj)
+    plt.xlabel('Time',fontsize=16)
+    plt.ylabel('Position',fontsize=16)
 
 
 def carSmall(controller=None):
-    vehicle = vh.car((0,-1,0),0,1.,VEHICLE_SPEED)
+    vehicle = vh.car((0,-1,0),np.pi,1.,VEHICLE_SPEED,controller=controller)
     window = Window(position=(0,3,0),flying=True, 
                     layout=smallLayout,
                     vehicle = vehicle,
@@ -1030,6 +1151,14 @@ def carSmall(controller=None):
     setup()
     pyglet.app.run()
 
+    fig,ax = plt.subplots(3,1,sharex=True)
+    ax[0].plot(vehicle.Time,vehicle.XTraj)
+    ax[0].set_ylabel('x',fontsize=16)
+    ax[1].plot(vehicle.Time,vehicle.YTraj)
+    ax[1].set_ylabel('y',fontsize=16)
+    ax[2].plot(vehicle.Time,vehicle.ThetaTraj)
+    ax[2].set_ylabel(r'$\theta$',fontsize=16)
+    ax[2].set_xlabel('Time',fontsize=16)
 def main():
     window = Window(position=(0,14,0),flying=True,
                     height=800,width=800, caption='Pyglet', resizable=True)
