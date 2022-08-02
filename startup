@@ -1,4 +1,11 @@
 #/bin/bash
+git clone --recursive https://github.com/stack-of-tasks/pinocchio
+
 
 python3 -m venv dstem
 source dstem/bin/activate
+
+pip install wheel
+pip install --upgrade pip
+pip install .
+jupyter notebook
