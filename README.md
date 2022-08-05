@@ -18,7 +18,9 @@ cd DiscoverSTEM
 ```
 
 * Press `Enter`
-* Click on `tutorial.ipynb`
+* This should install the required software and then open a browser window or tab.
+* You may get a message saying "Authentication Required". Just click cancel till it goes away. (3 clicks seems to work.)
+* Click on `tutorial.ipynb` in the browser
 
 # If you need to restart
 
@@ -31,6 +33,7 @@ jupyter notebook
 ```
 
 * Press `Enter`
+* If the "Authentication Required" box comes up, click "Cancel" till it goes away.
 * Click on `tutorial.ipynb`
 
  
