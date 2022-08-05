@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.linalg as la
+import numpy.linalg as la
 
    
 
@@ -18,7 +18,7 @@ class moveSphereTo:
         pos,vel = measurement
         self.posErr = pos - self.target
         self.velErr = vel
-        if la.norm(self.posErr) < self.tolerance:
+        if (la.norm(self.posErr) < self.tolerance) and (la.norm(self.velErr) < self.tolerance):
             self.Done = True
         
     def value(self):
@@ -45,7 +45,7 @@ class controllerSequence:
         
         
 class turnCar:
-    def __init__(self,target_angle,Kp=3,Kd=7,tolerance=0.05):
+    def __init__(self,target_angle,Kp=3,Kd=7,tolerance=0.001):
         self.target = target_angle
         self.Kp = Kp
         self.Kd = Kd
@@ -65,6 +65,36 @@ class turnCar:
         return np.array([0.,domega]) 
 
 class carForward:
+    def __init__(self,distance,Kp=3,Kd=7,tolerance=.001):
+        # Distance Must be positive
+        self.startPosition = None
+        self.Kp = Kp
+        self.Kd = Kd
+        self.tol = tolerance
+        self.Done = False
+        self.goalPosition = None
+        self.distance = np.abs(distance)
+    def update(self,measurement):
+        x,y,theta,v,omega = measurement
+        curPos = np.array([x,y])
+        if self.goalPosition is None:
+            self.goalPosition = curPos + self.distance * np.array([np.cos(theta),np.sin(theta)])
+            self.startPosition = np.copy(curPos)
+            self.projector = (self.goalPosition - self.startPosition) / self.distance
+        
+        self.d_err = np.dot(curPos - self.startPosition,self.projector) -self.distance
+        self.v_err = np.dot(np.array([v * np.cos(theta),v*np.sin(theta)]),self.projector)
+
+
+        if (np.abs(self.d_err) < self.tol) and (np.abs(self.v_err) < self.tol):
+            self.Done = True
+
+    def value(self):
+        return np.array([-self.Kp * self.d_err-self.Kd * self.v_err,0.]) 
+        
+
+    
+class carJoint:
     def __init__(self,distance,Kp=3,Kd=7,Kp_ang=.01,Kd_ang=.01,tolerance=.1):
         # Distance Must be positive
         self.startPosition = None

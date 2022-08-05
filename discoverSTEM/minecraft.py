@@ -166,118 +166,46 @@ class layout:
         ax.set_aspect('equal')
         ax.set_xticks([])
         ax.set_yticks([])
-MazeVertices = [(5,-1,6),
-                (4,-1,6),
-                (3,-1,6),
-                (2,-1,6),
-                (1,-1,6),
-                (0,-1,6),
-                (-1,-1,6),
-                (-2,-1,6),
-                (-3,-1,6),
-                (-4,-1,6),
-                (-5,-1,6),
-                (-6,-1,6),
-                (6,-1,-6),
-                (6,-1,-5),
-                (6,-1,-4),
-                (6,-1,-3),
-                (6,-1,-2),
-                (6,-1,-1),
-                (6,-1,0),
-                (6,-1,1),
-                (6,-1,2),
-                (6,-1,3),
-                (6,-1,4),
-                (6,-1,5),
-                (6,-1,6),
-                (3,-1,-6),
-                (2,-1,-6),
-                (1,-1,-6),
-                (0,-1,-6),
-                (-1,-1,-6),
-                (-2,-1,-6),
-                (-3,-1,-6),
-                (-4,-1,-6),
-                (-5,-1,-6),
-                (-6,-1,-6),
-                (-6,-1,-5),
-                (-6,-1,-4),
-                (-6,-1,-3),
-                (-6,-1,-2),
-                (-6,-1,-1),
-                (-6,-1,0),
-                (-6,-1,1),
-                (-6,-1,2),
-                (-6,-1,3),
-                (-6,-1,4),
-                (-6,-1,5),
-                (5,-1,-3),
-                (4,-1,-3),
-                (3,-1,-3),
-                (2,-1,-3),
-                (1,-1,-3),
-                (0,-1,-3),
-                (-1,-1,-3),
-                (-2,-1,-3),
-                (-3,-1,-3),
-                (-3,-1,-2),
-                (-3,-1,-1),
-                (-3,-1,0),
-                (-3,-1,1),
-                (-3,-1,2),
-                (-3,-1,3),
-                (-2,-1,3),
-                (-1,-1,3),
-                (0,-1,3),
-                (1,-1,3),
-                (2,-1,3),
-                (3,-1,3),
-                (3,-1,2),
-                (3,-1,1),
-                (3,-1,0)]
-       
-
-MazeVertices = [(7,-1,-5),
-                (6,-1,-5),
-                (5,-1,-5),
-                (4,-1,-5),
-                (3,-1,-5),
-                (2,-1,-5),
-                (1,-1,-5),
-                (0,-1,-5),
-                (-1,-1,-5),
-                (-2,-1,-5),
-                (-3,-1,-5),
-                (-4,-1,-5),
-                (-5,-1,-5),
-                (-5,-1,-4),
-                (-5,-1,-3),
-                (-5,-1,-2),
-                (-5,-1,-1),
-                (-5,-1,0),
-                (-5,-1,1),
-                (-5,-1,2),
-                (-5,-1,3),
-                (-5,-1,4),
-                (-5,-1,5),
-                (-4,-1,5),
-                (-3,-1,5),
-                (-2,-1,5),
-                (-1,-1,5),
-                (0,-1,5),
-                (1,-1,5),
-                (2,-1,5),
-                (3,-1,5),
-                (4,-1,5),
-                (5,-1,5),
-                (5,-1,4),
-                (5,-1,3),
-                (5,-1,2),
-                (5,-1,1),
-                (5,-1,0),
-                (5,-1,-1),
-                (5,-1,-2),
+MazeVertices = [# (7,-1,-5),
+                # (6,-1,-5),
+                # (5,-1,-5),
+                # (4,-1,-5),
+                # (3,-1,-5),
+                # (2,-1,-5),
+                # (1,-1,-5),
+                # (0,-1,-5),
+                # (-1,-1,-5),
+                # (-2,-1,-5),
+                # (-3,-1,-5),
+                # (-4,-1,-5),
+                # (-5,-1,-5),
+                # (-5,-1,-4),
+                # (-5,-1,-3),
+                # (-5,-1,-2),
+                # (-5,-1,-1),
+                # (-5,-1,0),
+                # (-5,-1,1),
+                # (-5,-1,2),
+                # (-5,-1,3),
+                # (-5,-1,4),
+                # (-5,-1,5),
+                # (-4,-1,5),
+                # (-3,-1,5),
+                # (-2,-1,5),
+                # (-1,-1,5),
+                # (0,-1,5),
+                # (1,-1,5),
+                # (2,-1,5),
+                # (3,-1,5),
+                # (4,-1,5),
+                # (5,-1,5),
+                # (5,-1,4),
+                # (5,-1,3),
+                # (5,-1,2),
+                # (5,-1,1),
+                # (5,-1,0),
+                # (5,-1,-1),
+                # (5,-1,-2),
                 (4,-1,-2),
                 (3,-1,-2),
                 (2,-1,-2),
@@ -297,9 +225,9 @@ MazeVertices = [(7,-1,-5),
                 ]
 
 smallStart = (0,0)
-mazeStart = (-7,-7)
+mazeStart = (-4,-4)
 smallLayout = layout(3,[],smallStart)
-mazeLayout = layout(8,MazeVertices,mazeStart)
+mazeLayout = layout(5,MazeVertices,mazeStart)
 
 class Model(object):
 
@@ -605,8 +533,8 @@ class Model(object):
         add_block() or remove_block() was called with immediate=False
 
         """
-        start = time.clock()
-        while self.queue and time.clock() - start < 1.0 / TICKS_PER_SEC:
+        start = time.perf_counter()
+        while self.queue and time.perf_counter() - start < 1.0 / TICKS_PER_SEC:
             self._dequeue()
 
     def process_entire_queue(self):
@@ -772,6 +700,7 @@ class Window(pyglet.window.Window):
         for _ in xrange(m):
             #self.model.vehicle.update(dt/m)
             self._update(dt/m)
+            
     def _update(self, dt):
         """ Private implementation of the `update()` method. This is where most
         of the motion logic lives, along with gravity and collision detection.
@@ -806,6 +735,8 @@ class Window(pyglet.window.Window):
         x,y,z = self.model.vehicle.position
         x,y,z = self.collide((x,y,z),1)
         self.model.vehicle.position = np.array([x,y,z])
+        if self.model.vehicle.controller.Done:
+            self.close()
         
 
     def collide(self, position, height):
@@ -1094,10 +1025,12 @@ def carInteractive():
     setup()
     pyglet.app.run()
 
+mazeHeight = 7
+    
 def ballMaze(controller=None):
     x,z = mazeStart
     vehicle = vh.rollingSphere((-x,-1,z),.4,VEHICLE_SPEED,controller=controller)
-    window = Window(position=(0,14,0),flying=True,vehicle=vehicle,
+    window = Window(position=(0,mazeHeight,0),flying=True,vehicle=vehicle,
                     height=800,width=800, caption='Pyglet',
                     resizable=True)
     # Hide the mouse cursor and prevent the mouse from leaving the window.
@@ -1105,16 +1038,48 @@ def ballMaze(controller=None):
     setup()
     pyglet.app.run()
 
+    Time = np.array(vehicle.Time)
+    Traj = np.array(vehicle.Traj)
+    Input = np.array(vehicle.Input)
+
+    
+    if vehicle.controller.Done and np.linalg.norm(Traj[-1]) < .1:
+        dt = Time[1]-Time[0]
+        dTraj = np.diff(Traj,axis=0)
+        PathLength =  np.sum(np.linalg.norm(dTraj,axis=0))
+        Energy =dt * np.sum(Input**2)
+        print('Maze Solved!')
+        print('Solve Time: %s\nInput Energy: %s' % (Time[-1],Energy))
+    else:
+        print('Simulation Terminated before Solve')
+
+
+
 def carMaze(controller=None):
     x,z = mazeStart
     vehicle = vh.car((-x,-1,z),np.pi,1.,VEHICLE_SPEED,controller=controller)
-    window = Window(position=(0,14,0),flying=True,vehicle=vehicle,
+    window = Window(position=(0,mazeHeight,0),flying=True,vehicle=vehicle,
                     height=800,width=800, caption='Pyglet',
                     resizable=True)
     # Hide the mouse cursor and prevent the mouse from leaving the window.
     window.set_exclusive_mouse(False)
     setup()
     pyglet.app.run()
+
+    Time = np.array(vehicle.Time)
+    Traj = np.column_stack([vehicle.XTraj,vehicle.YTraj])
+    Input = np.column_stack([vehicle.VTraj,vehicle.OmegaTraj])
+
+    
+    if vehicle.controller.Done and np.linalg.norm(Traj[-1]) < .1:
+        dt = Time[1]-Time[0]
+        dTraj = np.diff(Traj,axis=0)
+        PathLength =  np.sum(np.linalg.norm(dTraj,axis=0))
+        Energy =dt * np.sum(Input**2)
+        print('Maze Solved!')
+        print('Solve Time: %s\nInput Energy: %s' % (Time[-1],Energy))
+    else:
+        print('Simulation Terminated before Solve')
 
 
     

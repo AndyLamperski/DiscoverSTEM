@@ -84,16 +84,18 @@ class rollingSphere:
         if controller is None:
             class nullController:
                 def __init__(self):
-                    pass
+                    self.Done = False
                 def update(self,measurement):
                     pass
                 def value(self):
                     return np.zeros(2)
+                
             controller = nullController()
         self.controller = controller
 
         self.Time = [0.]
         self.Traj = [np.array([position[0],position[2]])]
+        self.Input = []
 
     def get_vertices(self):
         x,y,z = self.position
@@ -132,6 +134,7 @@ class rollingSphere:
 
         self.Time.append(self.Time[-1]+dt)
         self.Traj.append(np.array([-self.position[0],self.position[2]]))
+        self.Input.append(np.array([dx,dz]))
     def draw(self):
         Verts = self.get_vertices()
         Seq = self.Seq
@@ -310,7 +313,7 @@ class car:
         if controller is None:
             class nullController:
                 def __init__(self):
-                    pass
+                    self.Done = False
                 def update(self,measurement):
                     pass
                 def value(self):
@@ -323,6 +326,8 @@ class car:
         self.ThetaTraj = [np.pi-orientation]
         self.XTraj = [-self.position[0]]
         self.YTraj = [self.position[2]]
+        self.VTraj = []
+        self.OmegaTraj = []
     def get_rotation(self):
         theta = self.theta
         R = np.array([[np.cos(theta),0,-np.sin(theta)],
@@ -366,8 +371,8 @@ class car:
         dv,domega = self.controller.value()
 
 
-        self.v += dv
-        self.omega -= domega
+        self.v += dt * dv
+        self.omega -= dt * domega
         v = self.v
         
         dpos = np.array([np.cos(theta),0,np.sin(theta)])*v*dt*self.SPEED
@@ -378,6 +383,8 @@ class car:
         self.ThetaTraj.append(np.pi-self.theta)
         self.XTraj.append(-self.position[0])
         self.YTraj.append(self.position[2])
+        self.VTraj.append(dv)
+        self.OmegaTraj.append(domega)
     
     def on_key_press(self,symbol,modifiers):
         if symbol == key.UP:

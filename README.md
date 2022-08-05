@@ -6,7 +6,9 @@ Oh hey. Here is the code for our tutorial session.
 
 To get started do the following thing.
 
-* Open a terminal. 
+* Open a terminal.
+  - Click on the thing on the lower right.
+  - Search for `terminal`
 * Paste in the following commands (either right click or `Ctrl-Shift-v`)
 
 ```
