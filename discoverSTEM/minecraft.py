@@ -802,10 +802,11 @@ class Window(pyglet.window.Window):
             mouse button was clicked.
 
         """
-        if self.exclusive:
-            pass
-        else:
-            self.set_exclusive_mouse(True)
+        pass
+        # if self.exclusive:
+        #     pass
+        # else:
+        #     self.set_exclusive_mouse(True)
 
     def on_mouse_motion(self, x, y, dx, dy):
         """ Called when the player moves the mouse.
