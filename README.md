@@ -7,8 +7,9 @@ Oh hey. Here is the code for our tutorial session.
 To get started do the following thing.
 
 * Open a terminal.
-  - Click on the thing on the lower right.
+  - Click on the thing on the lower left.
   - Search for `terminal`
+  - Click on it
 * Paste in the following commands (either right click or `Ctrl-Shift-v`)
 
 ```
