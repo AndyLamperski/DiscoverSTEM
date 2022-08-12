@@ -1016,6 +1016,8 @@ def setup():
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
     #setup_fog()
 
+warningString = 'Running Simulation: Please Close Window before Moving On'
+    
 def carInteractive():
     vehicle = vh.car((0,-1,0),0,1.,VEHICLE_SPEED)
     window = Window(position=(0,14,0),flying=True,vehicle=vehicle,
@@ -1034,8 +1036,9 @@ def ballMaze(controller=None):
     window = Window(position=(0,mazeHeight,0),flying=True,vehicle=vehicle,
                     height=800,width=800, caption='Pyglet',
                     resizable=True)
-    # Hide the mouse cursor and prevent the mouse from leaving the window.
+    # Hide the mouse cursor and prevexsnt the mouse from leaving the window.
     window.set_exclusive_mouse(False)
+    print(warningString)
     setup()
     pyglet.app.run()
 
@@ -1065,6 +1068,7 @@ def carMaze(controller=None):
     # Hide the mouse cursor and prevent the mouse from leaving the window.
     window.set_exclusive_mouse(False)
     setup()
+    print(warningString)
     pyglet.app.run()
 
     Time = np.array(vehicle.Time)
@@ -1096,6 +1100,7 @@ def ballSmall(controller=None):
     # Hide the mouse cursor and prevent the mouse from leaving the window.
     window.set_exclusive_mouse(False)
     setup()
+    print(warningString)
     pyglet.app.run()
     Traj = np.array(vehicle.Traj)
     Time = np.array(vehicle.Time)
@@ -1115,6 +1120,7 @@ def carSmall(controller=None):
     # Hide the mouse cursor and prevent the mouse from leaving the window.
     window.set_exclusive_mouse(False)
     setup()
+    print(warningString)
     pyglet.app.run()
 
     fig,ax = plt.subplots(3,1,sharex=True)
